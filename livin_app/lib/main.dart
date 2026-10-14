@@ -6,6 +6,8 @@ import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.d
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_event.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 import 'package:livin_app/features/auth/presentation/views/pages/login_page.dart';
+import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_bloc.dart';
+import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_event.dart';
 import 'package:livin_app/features/listings/presentation/views/pages/listings_page.dart';
 import 'firebase_options.dart';
 
@@ -30,7 +32,11 @@ class MyApp extends StatelessWidget {
         home: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             if (state is AuthSuccess) {
-              return const ListingsPage();
+                            return BlocProvider(
+                create: (_) => sl<FavoritesBloc>()
+                  ..add(FavoritesStarted(userId: state.user.uid)),
+                child: const ListingsPage(),
+              );
             }
             return const LoginPage();
           },

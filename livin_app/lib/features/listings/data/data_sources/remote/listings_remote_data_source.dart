@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:livin_app/core/error/error_handler.dart';
 import 'package:livin_app/features/listings/data/models/listing_model.dart';
 
@@ -61,6 +60,18 @@ class ListingsRemoteDataSource {
   Future<void> deleteListing(String id) async {
     try {
       await _collection.doc(id).delete();
+    } on FirebaseException catch (e) {
+      throw handleFirestoreError(e);
+    }
+  }
+    Future<List<ListingModel>> getListingsByIds(List<String> ids) async {
+    try {
+      final docs =
+          await Future.wait(ids.map((id) => _collection.doc(id).get()));
+      return docs
+          .where((doc) => doc.exists)
+          .map((doc) => ListingModel.fromJson(doc.data()!))
+          .toList();
     } on FirebaseException catch (e) {
       throw handleFirestoreError(e);
     }

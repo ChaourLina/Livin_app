@@ -5,11 +5,18 @@ import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_event.dart';
+import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_bloc.dart';
+import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_event.dart';
+import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_state.dart';
+import 'package:livin_app/features/favorites/presentation/views/pages/favorites_page.dart';
 import 'package:livin_app/features/listings/domain/entities/listing_filter.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_bloc.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_event.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_state.dart';
+import 'package:livin_app/features/listings/presentation/views/pages/listing_details_page.dart';
 import 'package:livin_app/features/listings/presentation/views/widgets/listing_card.dart';
+import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
+import 'package:livin_app/features/listings/presentation/views/pages/my_listings_page.dart';
 
 class ListingsPage extends StatelessWidget {
   const ListingsPage({super.key});
@@ -37,14 +44,14 @@ class _ListingsViewState extends State<_ListingsView> {
 
   void _applyFilters() {
     context.read<ListingsBloc>().add(
-          ListingsFilterChanged(
-            filter: ListingFilter(
-              transactionType: _transaction,
-              city: _city,
-              type: _type,
-            ),
-          ),
-        );
+      ListingsFilterChanged(
+        filter: ListingFilter(
+          transactionType: _transaction,
+          city: _city,
+          type: _type,
+        ),
+      ),
+    );
   }
 
   @override
@@ -53,6 +60,38 @@ class _ListingsViewState extends State<_ListingsView> {
       appBar: AppBar(
         title: const Text('Livin'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            tooltip: 'Favoris',
+            onPressed: () {
+              final favoritesBloc = context.read<FavoritesBloc>();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: favoritesBloc,
+                    child: const FavoritesPage(),
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            tooltip: 'Mes annonces',
+            onPressed: () {
+              final authState = context.read<AuthBloc>().state;
+              if (authState is! AuthSuccess) return;
+              final listingsBloc = context.read<ListingsBloc>();
+              Navigator.of(context)
+                  .push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          MyListingsPage(ownerId: authState.user.uid),
+                    ),
+                  )
+                  .then((_) => listingsBloc.add(const ListingsRefreshed()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () =>
@@ -70,9 +109,13 @@ class _ListingsViewState extends State<_ListingsView> {
                 segments: const [
                   ButtonSegment<String>(value: 'all', label: Text('Tous')),
                   ButtonSegment<String>(
-                      value: AppConstants.sale, label: Text('Vente')),
+                    value: AppConstants.sale,
+                    label: Text('Vente'),
+                  ),
                   ButtonSegment<String>(
-                      value: AppConstants.rent, label: Text('Location')),
+                    value: AppConstants.rent,
+                    label: Text('Location'),
+                  ),
                 ],
                 selected: {_transaction ?? 'all'},
                 onSelectionChanged: (selection) {
@@ -146,9 +189,9 @@ class _ListingsViewState extends State<_ListingsView> {
                         Text(state.message),
                         const SizedBox(height: 12),
                         ElevatedButton(
-                          onPressed: () => context
-                              .read<ListingsBloc>()
-                              .add(const ListingsRefreshed()),
+                          onPressed: () => context.read<ListingsBloc>().add(
+                            const ListingsRefreshed(),
+                          ),
                           child: const Text('Réessayer'),
                         ),
                       ],
@@ -162,8 +205,29 @@ class _ListingsViewState extends State<_ListingsView> {
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: state.listings.length,
-                    itemBuilder: (context, index) =>
-                        ListingCard(listing: state.listings[index]),
+                    itemBuilder: (context, index) {
+                      final listing = state.listings[index];
+                      return BlocBuilder<FavoritesBloc, FavoritesState>(
+                        builder: (context, favState) {
+                          final isFavorite =
+                              favState is FavoritesSuccess &&
+                              favState.favoriteIds.contains(listing.id);
+                          return ListingCard(
+                            listing: listing,
+                            isFavorite: isFavorite,
+                            onFavoriteTap: () => context
+                                .read<FavoritesBloc>()
+                                .add(FavoriteToggled(listingId: listing.id)),
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ListingDetailsPage(listing: listing),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   );
                 }
                 return const Center(child: CircularProgressIndicator());
