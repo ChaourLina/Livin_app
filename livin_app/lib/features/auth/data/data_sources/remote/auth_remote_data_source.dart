@@ -73,4 +73,19 @@ class AuthRemoteDataSource {
       throw const ServerException();
     }
   }
+    Future<AuthModel> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+    required String photoUrl,
+  }) async {
+    try {
+      final ref = _firestore.collection('users').doc(uid);
+      await ref.update({'name': name, 'phone': phone, 'photoUrl': photoUrl});
+      final doc = await ref.get();
+      return AuthModel.fromJson(doc.data()!);
+    } on FirebaseException catch (e) {
+      throw handleFirestoreError(e);
+    }
+  }
 }

@@ -39,3 +39,18 @@ class AuthRegisterSubmitted extends AuthEvent {
 class AuthLoggedOut extends AuthEvent {
   const AuthLoggedOut();
 }
+
+class AuthProfileUpdated extends AuthEvent {
+  final String name;
+  final String phone;
+  final String? newPhotoPath;
+
+  const AuthProfileUpdated({
+    required this.name,
+    required this.phone,
+    this.newPhotoPath,
+  });
+
+  @override
+  List<Object?> get props => [name, phone, newPhotoPath];
+}

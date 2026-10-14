@@ -12,6 +12,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginSubmitted>(_onLoginSubmitted);
     on<AuthRegisterSubmitted>(_onRegisterSubmitted);
     on<AuthLoggedOut>(_onLoggedOut);
+    on<AuthProfileUpdated>(_onProfileUpdated);
   }
 
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
@@ -66,5 +67,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     await repository.logout();
     emit(const AuthInitial());
+  }
+
+  Future<void> _onProfileUpdated(
+    AuthProfileUpdated event,
+    Emitter<AuthState> emit,
+  ) async {
+    final current = state;
+    if (current is! AuthSuccess) return;
+    emit(AuthProfileUpdating(user: current.user));
+    try {
+      final updated = await repository.updateProfile(
+        user: current.user,
+        name: event.name,
+        phone: event.phone,
+        newPhotoPath: event.newPhotoPath,
+      );
+      emit(AuthSuccess(user: updated));
+    } on Failure catch (failure) {
+      emit(AuthProfileFailure(user: current.user, message: failure.message));
+    }
   }
 }

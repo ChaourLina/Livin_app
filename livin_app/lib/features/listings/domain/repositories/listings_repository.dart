@@ -83,6 +83,13 @@ class ListingsRepository {
   }
 
   bool _matches(Listing listing, ListingFilter filter) {
+    final query = filter.query?.trim().toLowerCase();
+    if (query != null && query.isNotEmpty) {
+      final text =
+          '${listing.title} ${listing.city} ${listing.type} ${listing.description}'
+              .toLowerCase();
+      if (!text.contains(query)) return false;
+    }
     if (filter.city != null && listing.city != filter.city) return false;
     if (filter.type != null && listing.type != filter.type) return false;
     if (filter.minPrice != null && listing.price < filter.minPrice!) {

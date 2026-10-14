@@ -68,9 +68,10 @@ class _MyListingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Mes annonces')),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(context),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Publier une annonce'),
       ),
       body: BlocBuilder<MyListingsBloc, MyListingsState>(
         builder: (context, state) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:livin_app/core/shared/app_input.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_event.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
@@ -61,7 +62,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Nom'),
+                      decoration: appInputDecoration(context, 'Nom', icon: Icons.person_outline),
                       validator: (value) =>
                           (value == null || value.trim().isEmpty)
                               ? 'Nom obligatoire'
@@ -71,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: appInputDecoration(context, 'Email', icon: Icons.mail_outline),
                       validator: (value) =>
                           (value == null || !value.contains('@'))
                               ? 'Email invalide'
@@ -81,8 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Mot de passe'),
+                      decoration: appInputDecoration(context, 'Mot de passe', icon: Icons.lock_outline),
                       validator: (value) =>
                           (value == null || value.length < 6)
                               ? '6 caractères minimum'

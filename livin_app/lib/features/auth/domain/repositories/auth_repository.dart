@@ -1,13 +1,17 @@
+import 'package:livin_app/core/error/error_handler.dart';
 import 'package:livin_app/core/error/exceptions.dart';
-import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/auth/data/data_sources/remote/auth_remote_data_source.dart';
 import 'package:livin_app/features/auth/domain/entities/auth_user.dart';
+import 'package:livin_app/features/listings/data/data_sources/remote/images_remote_data_source.dart';
 
 class AuthRepository {
-  final AuthRemoteDataSource _remoteDataSource;
+  final AuthRemoteDataSource remoteDataSource;
+  final ImagesRemoteDataSource imagesDataSource;
 
-  AuthRepository({required AuthRemoteDataSource remoteDataSource})
-      : _remoteDataSource = remoteDataSource;
+  AuthRepository({
+    required this.remoteDataSource,
+    required this.imagesDataSource,
+  });
 
   Future<AuthUser> login({
     required String email,
@@ -15,10 +19,10 @@ class AuthRepository {
   }) async {
     try {
       final model =
-          await _remoteDataSource.login(email: email, password: password);
+          await remoteDataSource.login(email: email, password: password);
       return model.toEntity();
     } on AppException catch (e) {
-      throw _toFailure(e);
+      throw exceptionToFailure(e);
     }
   }
 
@@ -28,35 +32,50 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final model = await _remoteDataSource.register(
+      final model = await remoteDataSource.register(
         name: name,
         email: email,
         password: password,
       );
       return model.toEntity();
     } on AppException catch (e) {
-      throw _toFailure(e);
+      throw exceptionToFailure(e);
     }
   }
 
   Future<AuthUser?> getCurrentUser() async {
     try {
-      final model = await _remoteDataSource.getCurrentUser();
+      final model = await remoteDataSource.getCurrentUser();
       return model?.toEntity();
     } on AppException catch (e) {
-      throw _toFailure(e);
+      throw exceptionToFailure(e);
+    }
+  }
+
+  Future<AuthUser> updateProfile({
+    required AuthUser user,
+    required String name,
+    required String phone,
+    String? newPhotoPath,
+  }) async {
+    try {
+      var photoUrl = user.photoUrl;
+      if (newPhotoPath != null) {
+        photoUrl = await imagesDataSource.uploadImage(newPhotoPath);
+      }
+      final model = await remoteDataSource.updateProfile(
+        uid: user.uid,
+        name: name,
+        phone: phone,
+        photoUrl: photoUrl,
+      );
+      return model.toEntity();
+    } on AppException catch (e) {
+      throw exceptionToFailure(e);
     }
   }
 
   Future<void> logout() async {
-    await _remoteDataSource.logout();
-  }
-
-  Failure _toFailure(AppException e) {
-    if (e is NetworkException) return NetworkFailure(e.message);
-    if (e is UnauthorizedException) return UnauthorizedFailure(e.message);
-    if (e is NotFoundException) return NotFoundFailure(e.message);
-    if (e is ServerException) return ServerFailure(e.message);
-    return UnknownFailure(e.message);
+    await remoteDataSource.logout();
   }
 }

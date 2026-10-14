@@ -14,34 +14,28 @@ import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/
 final GetIt sl = GetIt.instance;
 
 void setupDependencies() {
-  sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSource(),
-  );
+  // Auth
+  sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSource());
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepository(remoteDataSource: sl()),
+    () => AuthRepository(remoteDataSource: sl(), imagesDataSource: sl()),
   );
-  sl.registerFactory<AuthBloc>(
-    () => AuthBloc(repository: sl()),
-  );
-    sl.registerLazySingleton<ListingsRemoteDataSource>(
-    () => ListingsRemoteDataSource(),
-  );
-    sl.registerLazySingleton<ImagesRemoteDataSource>(
+  sl.registerFactory<AuthBloc>(() => AuthBloc(repository: sl()));
+
+  // Listings
+  sl.registerLazySingleton<ImagesRemoteDataSource>(
     () => ImagesRemoteDataSource(),
   );
+  sl.registerLazySingleton<ListingsRemoteDataSource>(
+    () => ListingsRemoteDataSource(),
+  );
   sl.registerLazySingleton<ListingsRepository>(
-    () => ListingsRepository(
-      remoteDataSource: sl(),
-      imagesDataSource: sl(),
-    ),
+    () => ListingsRepository(remoteDataSource: sl(), imagesDataSource: sl()),
   );
-  sl.registerFactory<ListingsBloc>(
-    () => ListingsBloc(repository: sl()),
-  );
-    sl.registerFactory<MyListingsBloc>(
-    () => MyListingsBloc(repository: sl()),
-  );
-    sl.registerLazySingleton<FavoritesRemoteDataSource>(
+  sl.registerFactory<ListingsBloc>(() => ListingsBloc(repository: sl()));
+  sl.registerFactory<MyListingsBloc>(() => MyListingsBloc(repository: sl()));
+
+  // Favorites
+  sl.registerLazySingleton<FavoritesRemoteDataSource>(
     () => FavoritesRemoteDataSource(),
   );
   sl.registerLazySingleton<FavoritesRepository>(
@@ -50,7 +44,5 @@ void setupDependencies() {
       listingsDataSource: sl(),
     ),
   );
-  sl.registerFactory<FavoritesBloc>(
-    () => FavoritesBloc(repository: sl()),
-  );
+  sl.registerFactory<FavoritesBloc>(() => FavoritesBloc(repository: sl()));
 }

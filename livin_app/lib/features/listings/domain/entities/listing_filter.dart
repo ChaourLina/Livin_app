@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class ListingFilter extends Equatable {
+  final String? query;
   final String? transactionType;
   final String? city;
   final String? type;
@@ -9,6 +10,7 @@ class ListingFilter extends Equatable {
   final int? minRooms;
 
   const ListingFilter({
+    this.query,
     this.transactionType,
     this.city,
     this.type,
@@ -19,5 +21,5 @@ class ListingFilter extends Equatable {
 
   @override
   List<Object?> get props =>
-      [transactionType, city, type, minPrice, maxPrice, minRooms];
+      [query, transactionType, city, type, minPrice, maxPrice, minRooms];
 }

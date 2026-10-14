@@ -25,6 +25,19 @@ class AuthSuccess extends AuthState {
   List<Object?> get props => [user];
 }
 
+class AuthProfileUpdating extends AuthSuccess {
+  const AuthProfileUpdating({required super.user});
+}
+
+class AuthProfileFailure extends AuthSuccess {
+  final String message;
+
+  const AuthProfileFailure({required super.user, required this.message});
+
+  @override
+  List<Object?> get props => [user, message];
+}
+
 class AuthFailure extends AuthState {
   final String message;
 
