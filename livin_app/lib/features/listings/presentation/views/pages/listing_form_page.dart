@@ -23,13 +23,14 @@ class _ListingFormPageState extends State<ListingFormPage> {
   late final TextEditingController _descriptionController;
   late final TextEditingController _priceController;
   late final TextEditingController _roomsController;
+  late final TextEditingController _contactController;
   late String _city;
   late String _type;
   late String _transaction;
 
   bool get _isEditing => widget.listing != null;
 
-  @override
+    @override
   void initState() {
     super.initState();
     final listing = widget.listing;
@@ -40,6 +41,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
         TextEditingController(text: listing?.price.toString() ?? '');
     _roomsController =
         TextEditingController(text: listing?.rooms.toString() ?? '');
+    _contactController = TextEditingController(text: listing?.contact ?? '');
     _city = listing?.city ?? AppConstants.cities.first;
     _type = listing?.type ?? AppConstants.propertyTypes.first;
     _transaction = listing?.transactionType ?? AppConstants.rent;
@@ -51,6 +53,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _roomsController.dispose();
+    _contactController.dispose();
     super.dispose();
   }
 
@@ -67,6 +70,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
       price: int.parse(_priceController.text.trim()),
       rooms: int.parse(_roomsController.text.trim()),
       city: _city,
+      contact: _contactController.text.trim(),
       photos: existing?.photos ?? const [],
       createdAt: existing?.createdAt ?? DateTime.now(),
     );
@@ -164,6 +168,17 @@ class _ListingFormPageState extends State<ListingFormPage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _contactController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                        labelText: 'Téléphone de contact'),
+                    validator: (value) =>
+                        (value == null || value.trim().length < 8)
+                            ? 'Numéro invalide'
+                            : null,
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(

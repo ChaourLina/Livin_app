@@ -11,6 +11,7 @@ class ListingModel {
   final int price;
   final int rooms;
   final String city;
+  final String contact;
   final List<String> photos;
   final DateTime createdAt;
 
@@ -24,6 +25,7 @@ class ListingModel {
     required this.price,
     required this.rooms,
     required this.city,
+    required this.contact,
     required this.photos,
     required this.createdAt,
   });
@@ -39,6 +41,7 @@ class ListingModel {
       price: (json['price'] as num).toInt(),
       rooms: (json['rooms'] as num).toInt(),
       city: json['city'],
+      contact: json['contact'] ?? '',
       photos: List<String>.from(json['photos'] ?? []),
       createdAt: (json['createdAt'] as Timestamp).toDate(),
     );
@@ -55,6 +58,7 @@ class ListingModel {
       'price': price,
       'rooms': rooms,
       'city': city,
+      'contact': contact,
       'photos': photos,
       'createdAt': Timestamp.fromDate(createdAt),
     };
@@ -71,6 +75,7 @@ class ListingModel {
       price: price,
       rooms: rooms,
       city: city,
+      contact: contact,
       photos: photos,
       createdAt: createdAt,
     );
@@ -87,6 +92,7 @@ class ListingModel {
       price: listing.price,
       rooms: listing.rooms,
       city: listing.city,
+      contact: listing.contact,
       photos: listing.photos,
       createdAt: listing.createdAt,
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
@@ -67,6 +68,36 @@ class ListingDetailsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(listing.description),
+                                const SizedBox(height: 24),
+                Text(
+                  'Contact',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (listing.contact.isEmpty)
+                  const Text('Aucun contact renseigné')
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          listing.contact,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.copy),
+                        label: const Text('Copier'),
+                        onPressed: () {
+                          Clipboard.setData(
+                          ClipboardData(text: listing.contact));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Numéro copié')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

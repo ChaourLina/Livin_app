@@ -10,6 +10,7 @@ class Listing extends Equatable {
   final int price;
   final int rooms;
   final String city;
+  final String contact;
   final List<String> photos;
   final DateTime createdAt;
 
@@ -23,6 +24,7 @@ class Listing extends Equatable {
     required this.price,
     required this.rooms,
     required this.city,
+    required this.contact,
     required this.photos,
     required this.createdAt,
   });
@@ -38,6 +40,7 @@ class Listing extends Equatable {
         price,
         rooms,
         city,
+        contact,
         photos,
         createdAt,
       ];
