@@ -11,14 +11,18 @@ class AppConstants {
 
   static const List<String> cities = [
     'Alger',
+    'Jijel',
     'Oran',
+    'Mostaganem'
     'Constantine',
     'Annaba',
     'Blida',
+    'Boumerdès',
     'Sétif',
     'Tizi Ouzou',
     'Béjaïa',
     'Tlemcen',
+    'Mascara',
     'Batna',
   ];
 }

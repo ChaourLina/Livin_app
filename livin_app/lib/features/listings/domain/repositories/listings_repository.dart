@@ -15,22 +15,19 @@ class ListingsRepository {
     required this.imagesDataSource,
   });
 
-  Future<List<Listing>> getListings({
-    ListingFilter filter = const ListingFilter(),
-  }) async {
+  Future<List<Listing>> getListings() async {
     try {
-      final models = await remoteDataSource.getListings(
-        transactionType: filter.transactionType,
-      );
-      final listings = models
-          .map((model) => model.toEntity())
-          .where((listing) => _matches(listing, filter))
-          .toList();
+      final models = await remoteDataSource.getListings();
+      final listings = models.map((model) => model.toEntity()).toList();
       listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return listings;
     } on AppException catch (e) {
       throw exceptionToFailure(e);
     }
+  }
+
+  List<Listing> filterListings(List<Listing> listings, ListingFilter filter) {
+    return listings.where((listing) => _matches(listing, filter)).toList();
   }
 
   Future<List<Listing>> getMyListings(String ownerId) async {
@@ -82,16 +79,38 @@ class ListingsRepository {
     }
   }
 
-  bool _matches(Listing listing, ListingFilter filter) {
-    final query = filter.query?.trim().toLowerCase();
-    if (query != null && query.isNotEmpty) {
-      final text =
-          '${listing.title} ${listing.city} ${listing.type} ${listing.description}'
-              .toLowerCase();
-      if (!text.contains(query)) return false;
+  String _normalize(String text) {
+    const accents = 'àáâãäåçèéêëìíîïñòóôõöùúûüýÿ';
+    const plain = 'aaaaaaceeeeiiiinooooouuuuyy';
+    var result = text.toLowerCase().trim();
+    for (var i = 0; i < accents.length; i++) {
+      result = result.replaceAll(accents[i], plain[i]);
     }
-    if (filter.city != null && listing.city != filter.city) return false;
-    if (filter.type != null && listing.type != filter.type) return false;
+    return result;
+  }
+
+  bool _matches(Listing listing, ListingFilter filter) {
+    final query = _normalize(filter.query ?? '');
+    if (query.isNotEmpty) {
+      final text = _normalize(
+        '${listing.title} ${listing.city} ${listing.type} '
+        '${listing.description} ${listing.transactionType}',
+      );
+      final words = query.split(RegExp(r'\s+'));
+      if (!words.every(text.contains)) return false;
+    }
+    if (filter.transactionType != null &&
+        listing.transactionType != filter.transactionType) {
+      return false;
+    }
+    if (filter.city != null &&
+        _normalize(listing.city) != _normalize(filter.city!)) {
+      return false;
+    }
+    if (filter.type != null &&
+        _normalize(listing.type) != _normalize(filter.type!)) {
+      return false;
+    }
     if (filter.minPrice != null && listing.price < filter.minPrice!) {
       return false;
     }

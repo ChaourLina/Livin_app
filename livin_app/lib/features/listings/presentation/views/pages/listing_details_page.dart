@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/core/utils/phone_utils.dart';
@@ -33,6 +32,17 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     }
   }
 
+  void _openViewer(int index) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PhotoViewerPage(
+          photos: widget.listing.photos,
+          initialIndex: index,
+        ),
+      ),
+    );
+  }
+
   void _openWhatsApp() {
     final number = toInternationalNumber(widget.listing.contact);
     if (number == null) {
@@ -51,11 +61,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
   void _call() {
     final phone = widget.listing.contact.replaceAll(' ', '');
     _launch(Uri(scheme: 'tel', path: phone), 'Impossible de lancer l\'appel.');
-  }
-
-  void _copy() {
-    Clipboard.setData(ClipboardData(text: widget.listing.contact));
-    _showMessage('Numéro copié');
   }
 
   @override
@@ -84,14 +89,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                         itemCount: listing.photos.length,
                         onPageChanged: (i) => setState(() => _photoIndex = i),
                         itemBuilder: (context, i) => GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => PhotoViewerPage(
-                                photos: listing.photos,
-                                initialIndex: i,
-                              ),
-                            ),
-                          ),
+                          onTap: () => _openViewer(i),
                           child: Image.network(
                             listing.photos[i],
                             fit: BoxFit.cover,
@@ -105,25 +103,29 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                       Positioned(
                         right: 12,
                         bottom: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.zoom_out_map,
-                                  size: 14, color: Colors.white),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${_photoIndex + 1} / ${listing.photos.length}',
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 12),
-                              ),
-                            ],
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _openViewer(_photoIndex),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.zoom_out_map,
+                                    size: 16, color: Colors.white),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${_photoIndex + 1} / ${listing.photos.length}',
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 13),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -177,10 +179,11 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                 if (listing.contact.isEmpty)
                   const Text('Aucun contact renseigné')
                 else ...[
-                  Text(
+                  SelectableText(
                     listing.contact,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
+                  const SizedBox(height: 2),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -199,11 +202,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                         icon: const Icon(Icons.call),
                         label: const Text('Appeler'),
                         onPressed: _call,
-                      ),
-                      TextButton.icon(
-                        icon: const Icon(Icons.copy),
-                        label: const Text('Copier'),
-                        onPressed: _copy,
                       ),
                     ],
                   ),

@@ -132,8 +132,7 @@ class _ListingsPageState extends State<ListingsPage> {
             child: TextField(
               controller: _searchController,
               textInputAction: TextInputAction.search,
-              onChanged: (_) => setState(() {}),
-              onSubmitted: (value) {
+              onChanged: (value) {
                 setState(() => _query = value.trim());
                 _applyFilters();
               },
