@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "658377118293",
+    "project_id": "livin-app-40ad3",
+    "storage_bucket": "livin-app-40ad3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:658377118293:android:762e1dcddd4e220fab3adc",
+        "android_client_info": {
+          "package_name": "com.example.livin_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "658377118293-upbloh6e1o0po0o6sdel2hpibbb2o6ft.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHZzPG8zuHHd76CMNwtkWxw-xUaQsTcmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "658377118293-upbloh6e1o0po0o6sdel2hpibbb2o6ft.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
