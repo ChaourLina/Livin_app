@@ -19,20 +19,22 @@ class MyListingsStarted extends MyListingsEvent {
 
 class MyListingCreated extends MyListingsEvent {
   final Listing listing;
+  final List<String> imagePaths;
 
-  const MyListingCreated({required this.listing});
+  const MyListingCreated({required this.listing, this.imagePaths = const []});
 
   @override
-  List<Object?> get props => [listing];
+  List<Object?> get props => [listing, imagePaths];
 }
 
 class MyListingUpdated extends MyListingsEvent {
   final Listing listing;
+  final List<String> imagePaths;
 
-  const MyListingUpdated({required this.listing});
+  const MyListingUpdated({required this.listing, this.imagePaths = const []});
 
   @override
-  List<Object?> get props => [listing];
+  List<Object?> get props => [listing, imagePaths];
 }
 
 class MyListingDeleted extends MyListingsEvent {

@@ -5,6 +5,7 @@ import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.d
 import 'package:livin_app/features/favorites/data/data_sources/remote/favorites_remote_data_source.dart';
 import 'package:livin_app/features/favorites/domain/repositories/favorites_repository.dart';
 import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_bloc.dart';
+import 'package:livin_app/features/listings/data/data_sources/remote/images_remote_data_source.dart';
 import 'package:livin_app/features/listings/data/data_sources/remote/listings_remote_data_source.dart';
 import 'package:livin_app/features/listings/domain/repositories/listings_repository.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_bloc.dart';
@@ -25,8 +26,14 @@ void setupDependencies() {
     sl.registerLazySingleton<ListingsRemoteDataSource>(
     () => ListingsRemoteDataSource(),
   );
+    sl.registerLazySingleton<ImagesRemoteDataSource>(
+    () => ImagesRemoteDataSource(),
+  );
   sl.registerLazySingleton<ListingsRepository>(
-    () => ListingsRepository(remoteDataSource: sl()),
+    () => ListingsRepository(
+      remoteDataSource: sl(),
+      imagesDataSource: sl(),
+    ),
   );
   sl.registerFactory<ListingsBloc>(
     () => ListingsBloc(repository: sl()),

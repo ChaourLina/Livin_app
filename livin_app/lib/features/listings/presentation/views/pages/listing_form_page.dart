@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
@@ -18,7 +21,10 @@ class ListingFormPage extends StatefulWidget {
 }
 
 class _ListingFormPageState extends State<ListingFormPage> {
+  static const int _maxPhotos = 5;
+
   final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _priceController;
@@ -27,10 +33,12 @@ class _ListingFormPageState extends State<ListingFormPage> {
   late String _city;
   late String _type;
   late String _transaction;
+  late List<String> _existingPhotos;
+  final List<String> _newImagePaths = [];
 
   bool get _isEditing => widget.listing != null;
 
-    @override
+  @override
   void initState() {
     super.initState();
     final listing = widget.listing;
@@ -45,6 +53,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
     _city = listing?.city ?? AppConstants.cities.first;
     _type = listing?.type ?? AppConstants.propertyTypes.first;
     _transaction = listing?.transactionType ?? AppConstants.rent;
+    _existingPhotos = List<String>.from(listing?.photos ?? const []);
   }
 
   @override
@@ -55,6 +64,24 @@ class _ListingFormPageState extends State<ListingFormPage> {
     _roomsController.dispose();
     _contactController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImages() async {
+    final remaining = _maxPhotos - _existingPhotos.length - _newImagePaths.length;
+    if (remaining <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('5 photos maximum par annonce')),
+      );
+      return;
+    }
+    final files = await _picker.pickMultiImage(
+      imageQuality: 70,
+      maxWidth: 1280,
+    );
+    if (files.isEmpty) return;
+    setState(() {
+      _newImagePaths.addAll(files.take(remaining).map((file) => file.path));
+    });
   }
 
   void _submit() {
@@ -71,14 +98,14 @@ class _ListingFormPageState extends State<ListingFormPage> {
       rooms: int.parse(_roomsController.text.trim()),
       city: _city,
       contact: _contactController.text.trim(),
-      photos: existing?.photos ?? const [],
+      photos: _existingPhotos,
       createdAt: existing?.createdAt ?? DateTime.now(),
     );
     final bloc = context.read<MyListingsBloc>();
     if (existing == null) {
-      bloc.add(MyListingCreated(listing: listing));
+      bloc.add(MyListingCreated(listing: listing, imagePaths: _newImagePaths));
     } else {
-      bloc.add(MyListingUpdated(listing: listing));
+      bloc.add(MyListingUpdated(listing: listing, imagePaths: _newImagePaths));
     }
   }
 
@@ -201,6 +228,45 @@ class _ListingFormPageState extends State<ListingFormPage> {
                     onChanged: (value) => setState(() => _type = value!),
                   ),
                   const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Photos',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (_existingPhotos.isNotEmpty || _newImagePaths.isNotEmpty)
+                    SizedBox(
+                      height: 90,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          for (var i = 0; i < _existingPhotos.length; i++)
+                            _PhotoThumb(
+                              image: NetworkImage(_existingPhotos[i]),
+                              onRemove: () =>
+                                  setState(() => _existingPhotos.removeAt(i)),
+                            ),
+                          for (var i = 0; i < _newImagePaths.length; i++)
+                            _PhotoThumb(
+                              image: FileImage(File(_newImagePaths[i])),
+                              onRemove: () =>
+                                  setState(() => _newImagePaths.removeAt(i)),
+                            ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
+                      label: const Text('Ajouter des photos'),
+                      onPressed: _pickImages,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   BlocBuilder<MyListingsBloc, MyListingsState>(
                     builder: (context, state) {
                       final isLoading = state is MyListingsLoading;
@@ -225,6 +291,45 @@ class _ListingFormPageState extends State<ListingFormPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PhotoThumb extends StatelessWidget {
+  final ImageProvider image;
+  final VoidCallback onRemove;
+
+  const _PhotoThumb({required this.image, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image(
+              image: image,
+              width: 90,
+              height: 90,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: 2,
+            right: 2,
+            child: GestureDetector(
+              onTap: onRemove,
+              child: const CircleAvatar(
+                radius: 12,
+                backgroundColor: Colors.black54,
+                child: Icon(Icons.close, size: 14, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

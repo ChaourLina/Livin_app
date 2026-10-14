@@ -28,7 +28,22 @@ class Listing extends Equatable {
     required this.photos,
     required this.createdAt,
   });
-
+    Listing copyWith({List<String>? photos}) {
+    return Listing(
+      id: id,
+      ownerId: ownerId,
+      title: title,
+      description: description,
+      type: type,
+      transactionType: transactionType,
+      price: price,
+      rooms: rooms,
+      city: city,
+      contact: contact,
+      photos: photos ?? this.photos,
+      createdAt: createdAt,
+    );
+  }
   @override
   List<Object?> get props => [
         id,

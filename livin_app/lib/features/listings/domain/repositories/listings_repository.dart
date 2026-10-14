@@ -1,5 +1,6 @@
 import 'package:livin_app/core/error/error_handler.dart';
 import 'package:livin_app/core/error/exceptions.dart';
+import 'package:livin_app/features/listings/data/data_sources/remote/images_remote_data_source.dart';
 import 'package:livin_app/features/listings/data/data_sources/remote/listings_remote_data_source.dart';
 import 'package:livin_app/features/listings/data/models/listing_model.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
@@ -7,8 +8,12 @@ import 'package:livin_app/features/listings/domain/entities/listing_filter.dart'
 
 class ListingsRepository {
   final ListingsRemoteDataSource remoteDataSource;
+  final ImagesRemoteDataSource imagesDataSource;
 
-  ListingsRepository({required this.remoteDataSource});
+  ListingsRepository({
+    required this.remoteDataSource,
+    required this.imagesDataSource,
+  });
 
   Future<List<Listing>> getListings({
     ListingFilter filter = const ListingFilter(),
@@ -34,6 +39,18 @@ class ListingsRepository {
       final listings = models.map((model) => model.toEntity()).toList();
       listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return listings;
+    } on AppException catch (e) {
+      throw exceptionToFailure(e);
+    }
+  }
+
+  Future<List<String>> uploadImages(List<String> filePaths) async {
+    try {
+      final urls = <String>[];
+      for (final path in filePaths) {
+        urls.add(await imagesDataSource.uploadImage(path));
+      }
+      return urls;
     } on AppException catch (e) {
       throw exceptionToFailure(e);
     }

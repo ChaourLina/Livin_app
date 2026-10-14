@@ -17,7 +17,11 @@ class MyListingsBloc extends Bloc<MyListingsEvent, MyListingsState> {
     on<MyListingCreated>((event, emit) async {
       emit(const MyListingsLoading());
       try {
-        await repository.createListing(event.listing);
+        final urls = await repository.uploadImages(event.imagePaths);
+        final listing = event.listing.copyWith(
+          photos: [...event.listing.photos, ...urls],
+        );
+        await repository.createListing(listing);
         await _load(emit);
       } on Failure catch (failure) {
         emit(MyListingsFailure(message: failure.message));
@@ -26,7 +30,11 @@ class MyListingsBloc extends Bloc<MyListingsEvent, MyListingsState> {
     on<MyListingUpdated>((event, emit) async {
       emit(const MyListingsLoading());
       try {
-        await repository.updateListing(event.listing);
+        final urls = await repository.uploadImages(event.imagePaths);
+        final listing = event.listing.copyWith(
+          photos: [...event.listing.photos, ...urls],
+        );
+        await repository.updateListing(listing);
         await _load(emit);
       } on Failure catch (failure) {
         emit(MyListingsFailure(message: failure.message));
