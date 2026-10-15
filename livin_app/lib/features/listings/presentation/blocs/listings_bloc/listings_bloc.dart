@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
 import 'package:livin_app/features/listings/domain/entities/listing_filter.dart';
 import 'package:livin_app/features/listings/domain/repositories/listings_repository.dart';
@@ -19,12 +18,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
   Future<void> _fetch(Emitter<ListingsState> emit) async {
     emit(const ListingsLoading());
-    try {
-      _all = await repository.getListings();
-      emit(_successState());
-    } on Failure catch (failure) {
-      emit(ListingsFailure(message: failure.message));
-    }
+    final result = await repository.getListings();
+    result.fold(
+      (failure) => emit(ListingsFailure(message: failure.message)),
+      (listings) {
+        _all = listings;
+        emit(_successState());
+      },
+    );
   }
 
   void _onFilterChanged(

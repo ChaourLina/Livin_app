@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/core/utils/phone_utils.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
-import 'package:livin_app/features/listings/presentation/views/pages/photo_viewer_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ListingDetailsPage extends StatefulWidget {
@@ -32,14 +33,10 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     }
   }
 
-  void _openViewer(int index) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PhotoViewerPage(
-          photos: widget.listing.photos,
-          initialIndex: index,
-        ),
-      ),
+    void _openViewer(int index) {
+    context.push(
+      AppRoutes.photos,
+      extra: (photos: widget.listing.photos, index: index),
     );
   }
 

@@ -41,9 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthSuccess) {
-          Navigator.of(context).pop();
-        } else if (state is AuthFailure &&
+        if (state is AuthFailure &&
             (ModalRoute.of(context)?.isCurrent ?? false)) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(state.message)));

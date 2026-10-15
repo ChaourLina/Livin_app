@@ -16,6 +16,10 @@ class AuthLoading extends AuthState {
   const AuthLoading();
 }
 
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
 class AuthSuccess extends AuthState {
   final AuthUser user;
 

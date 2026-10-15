@@ -1,5 +1,6 @@
+import 'package:livin_app/core/error/either.dart';
 import 'package:livin_app/core/error/error_handler.dart';
-import 'package:livin_app/core/error/exceptions.dart';
+import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/auth/data/data_sources/remote/auth_remote_data_source.dart';
 import 'package:livin_app/features/auth/domain/entities/auth_user.dart';
 import 'package:livin_app/features/listings/data/data_sources/remote/images_remote_data_source.dart';
@@ -13,52 +14,46 @@ class AuthRepository {
     required this.imagesDataSource,
   });
 
-  Future<AuthUser> login({
+  Future<Either<Failure, AuthUser>> login({
     required String email,
     required String password,
-  }) async {
-    try {
+  }) {
+    return guard(() async {
       final model =
           await remoteDataSource.login(email: email, password: password);
       return model.toEntity();
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<AuthUser> register({
+  Future<Either<Failure, AuthUser>> register({
     required String name,
     required String email,
     required String password,
-  }) async {
-    try {
+  }) {
+    return guard(() async {
       final model = await remoteDataSource.register(
         name: name,
         email: email,
         password: password,
       );
       return model.toEntity();
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<AuthUser?> getCurrentUser() async {
-    try {
+  Future<Either<Failure, AuthUser?>> getCurrentUser() {
+    return guard<AuthUser?>(() async {
       final model = await remoteDataSource.getCurrentUser();
       return model?.toEntity();
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<AuthUser> updateProfile({
+  Future<Either<Failure, AuthUser>> updateProfile({
     required AuthUser user,
     required String name,
     required String phone,
     String? newPhotoPath,
-  }) async {
-    try {
+  }) {
+    return guard(() async {
       var photoUrl = user.photoUrl;
       if (newPhotoPath != null) {
         photoUrl = await imagesDataSource.uploadImage(newPhotoPath);
@@ -70,12 +65,12 @@ class AuthRepository {
         photoUrl: photoUrl,
       );
       return model.toEntity();
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<void> logout() async {
-    await remoteDataSource.logout();
+  Future<Either<Failure, void>> logout() {
+    return guard<void>(() async {
+      await remoteDataSource.logout();
+    });
   }
 }

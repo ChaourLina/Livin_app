@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PhotoViewerPage extends StatefulWidget {
   final List<String> photos;
@@ -69,7 +70,7 @@ class _PhotoViewerPageState extends State<PhotoViewerPage> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => context.pop()
                   ),
                   const Spacer(),
                   if (widget.photos.length > 1)

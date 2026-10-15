@@ -1,17 +1,21 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:livin_app/core/di/injection.dart';
+import 'package:livin_app/core/router/app_router.dart';
+import 'package:livin_app/core/router/go_router_refresh_stream.dart';
 import 'package:livin_app/core/shared/app_theme.dart';
-import 'package:livin_app/core/shared/home_shell.dart';
-import 'package:livin_app/core/shared/welcome_page.dart';
 import 'package:livin_app/core/utils/first_launch.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_event.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
-import 'package:livin_app/features/auth/presentation/views/pages/login_page.dart';
 import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_bloc.dart';
 import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_event.dart';
+import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_bloc.dart';
+import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_event.dart';
+import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/my_listings_bloc.dart';
+import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/my_listings_event.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -20,55 +24,67 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   setupDependencies();
-  final isFirstLaunch = await FirstLaunch.isFirstLaunch();
-  runApp(MyApp(showWelcome: isFirstLaunch));
+  await FirstLaunch.load();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  final bool showWelcome;
-
-  const MyApp({super.key, required this.showWelcome});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  late bool _showWelcome;
+  late final AuthBloc _authBloc;
+  late final GoRouterRefreshStream _refreshListenable;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
-    _showWelcome = widget.showWelcome;
+    _authBloc = sl<AuthBloc>()..add(const AuthStarted());
+    _refreshListenable = GoRouterRefreshStream(_authBloc.stream);
+    _router = AppRouter.create(
+      authBloc: _authBloc,
+      refreshListenable: _refreshListenable,
+    );
   }
 
-  Future<void> _onStart() async {
-    await FirstLaunch.markSeen();
-    if (mounted) setState(() => _showWelcome = false);
+  @override
+  void dispose() {
+    _router.dispose();
+    _refreshListenable.dispose();
+    _authBloc.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthBloc>()..add(const AuthStarted()),
-      child: MaterialApp(
-        title: 'Livin',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        home: _showWelcome
-            ? WelcomePage(onStart: _onStart)
-            : BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  if (state is AuthSuccess) {
-                    return BlocProvider(
-                      create: (_) => sl<FavoritesBloc>()
-                        ..add(FavoritesStarted(userId: state.user.uid)),
-                      child: HomeShell(userId: state.user.uid),
-                    );
-                  }
-                  return const LoginPage();
-                },
-              ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: _authBloc),
+        BlocProvider<ListingsBloc>(create: (_) => sl<ListingsBloc>()),
+        BlocProvider<MyListingsBloc>(create: (_) => sl<MyListingsBloc>()),
+        BlocProvider<FavoritesBloc>(create: (_) => sl<FavoritesBloc>()),
+      ],
+      child: BlocListener<AuthBloc, AuthState>(
+        listenWhen: (previous, current) =>
+            current is AuthSuccess && previous is! AuthSuccess,
+        listener: (context, state) {
+          final user = (state as AuthSuccess).user;
+          context.read<ListingsBloc>().add(const ListingsStarted());
+          context
+              .read<MyListingsBloc>()
+              .add(MyListingsStarted(ownerId: user.uid));
+          context.read<FavoritesBloc>().add(FavoritesStarted(userId: user.uid));
+        },
+        child: MaterialApp.router(
+          title: 'Livin',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          routerConfig: _router,
+        ),
       ),
     );
   }

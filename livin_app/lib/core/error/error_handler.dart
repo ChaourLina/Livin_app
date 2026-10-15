@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:livin_app/core/error/either.dart';
 import 'package:livin_app/core/error/exceptions.dart';
 import 'package:livin_app/core/error/failure.dart';
 
@@ -14,13 +15,15 @@ AppException handleAuthError(FirebaseAuthException e) {
     case 'email-already-in-use':
       return const ServerException('Cet email est déjà utilisé.');
     case 'weak-password':
-      return const ServerException('Mot de passe trop faible (6 caractères minimum).');
+      return const ServerException(
+          'Mot de passe trop faible (6 caractères minimum).');
     case 'too-many-requests':
       return const ServerException('Trop de tentatives. Réessayez plus tard.');
     default:
       return const UnknownException();
   }
 }
+
 AppException handleFirestoreError(FirebaseException e) {
   switch (e.code) {
     case 'unavailable':
@@ -35,10 +38,19 @@ AppException handleFirestoreError(FirebaseException e) {
       return const ServerException();
   }
 }
+
 Failure exceptionToFailure(AppException e) {
   if (e is NetworkException) return NetworkFailure(e.message);
   if (e is UnauthorizedException) return UnauthorizedFailure(e.message);
   if (e is NotFoundException) return NotFoundFailure(e.message);
   if (e is ServerException) return ServerFailure(e.message);
   return UnknownFailure(e.message);
+}
+
+Future<Either<Failure, T>> guard<T>(Future<T> Function() action) async {
+  try {
+    return Either.right(await action());
+  } on AppException catch (e) {
+    return Either.left(exceptionToFailure(e));
+  }
 }

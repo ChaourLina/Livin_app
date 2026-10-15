@@ -1,42 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:livin_app/core/di/injection.dart';
+import 'package:go_router/go_router.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/core/utils/formatters.dart';
+import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
+import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
 import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/my_listings_bloc.dart';
 import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/my_listings_event.dart';
 import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/my_listings_state.dart';
-import 'package:livin_app/features/listings/presentation/views/pages/listing_form_page.dart';
 
 class MyListingsPage extends StatelessWidget {
-  final String ownerId;
+  const MyListingsPage({super.key});
 
-  const MyListingsPage({super.key, required this.ownerId});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          sl<MyListingsBloc>()..add(MyListingsStarted(ownerId: ownerId)),
-      child: _MyListingsView(ownerId: ownerId),
-    );
+  String? _currentUserId(BuildContext context) {
+    final auth = context.read<AuthBloc>().state;
+    return auth is AuthSuccess ? auth.user.uid : null;
   }
-}
-
-class _MyListingsView extends StatelessWidget {
-  final String ownerId;
-
-  const _MyListingsView({required this.ownerId});
 
   void _openForm(BuildContext context, {Listing? listing}) {
-    final bloc = context.read<MyListingsBloc>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: bloc,
-          child: ListingFormPage(ownerId: ownerId, listing: listing),
-        ),
-      ),
+    final ownerId = _currentUserId(context);
+    if (ownerId == null) return;
+    context.push(
+      AppRoutes.listingForm,
+      extra: (ownerId: ownerId, listing: listing),
     );
   }
 
@@ -83,9 +70,13 @@ class _MyListingsView extends StatelessWidget {
                   Text(state.message),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () => context
-                        .read<MyListingsBloc>()
-                        .add(MyListingsStarted(ownerId: ownerId)),
+                    onPressed: () {
+                      final ownerId = _currentUserId(context);
+                      if (ownerId == null) return;
+                      context
+                          .read<MyListingsBloc>()
+                          .add(MyListingsStarted(ownerId: ownerId));
+                    },
                     child: const Text('Réessayer'),
                   ),
                 ],
@@ -99,7 +90,7 @@ class _MyListingsView extends StatelessWidget {
               );
             }
             return ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
               itemCount: state.listings.length,
               itemBuilder: (context, index) {
                 final listing = state.listings[index];

@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/favorites/domain/repositories/favorites_repository.dart';
 import 'favorites_event.dart';
 import 'favorites_state.dart';
@@ -19,28 +18,34 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   }
 
   Future<void> _load(Emitter<FavoritesState> emit) async {
-    try {
-      _ids = await repository.getFavoriteIds(_userId);
-      final listings = await repository.getFavoriteListings(_ids);
-      emit(FavoritesSuccess(favoriteIds: _ids, listings: listings));
-    } on Failure catch (failure) {
-      emit(FavoritesFailure(message: failure.message));
+    final idsResult = await repository.getFavoriteIds(_userId);
+    if (idsResult.isLeft) {
+      emit(FavoritesFailure(message: idsResult.left.message));
+      return;
     }
+    _ids = idsResult.right;
+    final listingsResult = await repository.getFavoriteListings(_ids);
+    listingsResult.fold(
+      (failure) => emit(FavoritesFailure(message: failure.message)),
+      (listings) => emit(
+        FavoritesSuccess(favoriteIds: _ids, listings: listings),
+      ),
+    );
   }
 
   Future<void> _onToggled(
     FavoriteToggled event,
     Emitter<FavoritesState> emit,
   ) async {
-    try {
-      await repository.toggleFavorite(
-        userId: _userId,
-        listingId: event.listingId,
-        isFavorite: _ids.contains(event.listingId),
-      );
-      await _load(emit);
-    } on Failure catch (failure) {
-      emit(FavoritesFailure(message: failure.message));
+    final result = await repository.toggleFavorite(
+      userId: _userId,
+      listingId: event.listingId,
+      isFavorite: _ids.contains(event.listingId),
+    );
+    if (result.isLeft) {
+      emit(FavoritesFailure(message: result.left.message));
+      return;
     }
+    await _load(emit);
   }
 }

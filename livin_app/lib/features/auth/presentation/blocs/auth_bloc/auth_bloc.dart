@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/auth/domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -16,16 +15,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
-    try {
-      final user = await repository.getCurrentUser();
-      if (user != null) {
-        emit(AuthSuccess(user: user));
-      } else {
-        emit(const AuthInitial());
-      }
-    } on Failure {
-      emit(const AuthInitial());
-    }
+    final result = await repository.getCurrentUser();
+    result.fold(
+      (_) => emit(const AuthUnauthenticated()),
+      (user) => emit(
+        user == null
+            ? const AuthUnauthenticated()
+            : AuthSuccess(user: user),
+      ),
+    );
   }
 
   Future<void> _onLoginSubmitted(
@@ -33,15 +31,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-    try {
-      final user = await repository.login(
-        email: event.email,
-        password: event.password,
-      );
-      emit(AuthSuccess(user: user));
-    } on Failure catch (failure) {
-      emit(AuthFailure(message: failure.message));
-    }
+    final result = await repository.login(
+      email: event.email,
+      password: event.password,
+    );
+    result.fold(
+      (failure) => emit(AuthFailure(message: failure.message)),
+      (user) => emit(AuthSuccess(user: user)),
+    );
   }
 
   Future<void> _onRegisterSubmitted(
@@ -49,16 +46,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-    try {
-      final user = await repository.register(
-        name: event.name,
-        email: event.email,
-        password: event.password,
-      );
-      emit(AuthSuccess(user: user));
-    } on Failure catch (failure) {
-      emit(AuthFailure(message: failure.message));
-    }
+    final result = await repository.register(
+      name: event.name,
+      email: event.email,
+      password: event.password,
+    );
+    result.fold(
+      (failure) => emit(AuthFailure(message: failure.message)),
+      (user) => emit(AuthSuccess(user: user)),
+    );
   }
 
   Future<void> _onLoggedOut(
@@ -66,7 +62,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     await repository.logout();
-    emit(const AuthInitial());
+    emit(const AuthUnauthenticated());
   }
 
   Future<void> _onProfileUpdated(
@@ -76,16 +72,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final current = state;
     if (current is! AuthSuccess) return;
     emit(AuthProfileUpdating(user: current.user));
-    try {
-      final updated = await repository.updateProfile(
-        user: current.user,
-        name: event.name,
-        phone: event.phone,
-        newPhotoPath: event.newPhotoPath,
-      );
-      emit(AuthSuccess(user: updated));
-    } on Failure catch (failure) {
-      emit(AuthProfileFailure(user: current.user, message: failure.message));
-    }
+    final result = await repository.updateProfile(
+      user: current.user,
+      name: event.name,
+      phone: event.phone,
+      newPhotoPath: event.newPhotoPath,
+    );
+    result.fold(
+      (failure) => emit(
+        AuthProfileFailure(user: current.user, message: failure.message),
+      ),
+      (updated) => emit(AuthSuccess(user: updated)),
+    );
   }
 }

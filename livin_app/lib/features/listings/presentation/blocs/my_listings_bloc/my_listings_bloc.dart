@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:livin_app/core/error/failure.dart';
+import 'package:livin_app/features/listings/domain/entities/listing.dart';
 import 'package:livin_app/features/listings/domain/repositories/listings_repository.dart';
 import 'my_listings_event.dart';
 import 'my_listings_state.dart';
@@ -14,50 +14,59 @@ class MyListingsBloc extends Bloc<MyListingsEvent, MyListingsState> {
       _ownerId = event.ownerId;
       return _load(emit);
     });
-    on<MyListingCreated>((event, emit) async {
-      emit(const MyListingsLoading());
-      try {
-        final urls = await repository.uploadImages(event.imagePaths);
-        final listing = event.listing.copyWith(
-          photos: [...event.listing.photos, ...urls],
-        );
-        await repository.createListing(listing);
-        await _load(emit);
-      } on Failure catch (failure) {
-        emit(MyListingsFailure(message: failure.message));
-      }
-    });
-    on<MyListingUpdated>((event, emit) async {
-      emit(const MyListingsLoading());
-      try {
-        final urls = await repository.uploadImages(event.imagePaths);
-        final listing = event.listing.copyWith(
-          photos: [...event.listing.photos, ...urls],
-        );
-        await repository.updateListing(listing);
-        await _load(emit);
-      } on Failure catch (failure) {
-        emit(MyListingsFailure(message: failure.message));
-      }
-    });
-    on<MyListingDeleted>((event, emit) async {
-      emit(const MyListingsLoading());
-      try {
-        await repository.deleteListing(event.listingId);
-        await _load(emit);
-      } on Failure catch (failure) {
-        emit(MyListingsFailure(message: failure.message));
-      }
-    });
+    on<MyListingCreated>(
+      (event, emit) => _save(event.listing, event.imagePaths, true, emit),
+    );
+    on<MyListingUpdated>(
+      (event, emit) => _save(event.listing, event.imagePaths, false, emit),
+    );
+    on<MyListingDeleted>(_onDeleted);
+  }
+
+  Future<void> _save(
+    Listing listing,
+    List<String> imagePaths,
+    bool isNew,
+    Emitter<MyListingsState> emit,
+  ) async {
+    emit(const MyListingsLoading());
+    final uploaded = await repository.uploadImages(imagePaths);
+    if (uploaded.isLeft) {
+      emit(MyListingsFailure(message: uploaded.left.message));
+      return;
+    }
+    final withPhotos = listing.copyWith(
+      photos: [...listing.photos, ...uploaded.right],
+    );
+    final saved = isNew
+        ? await repository.createListing(withPhotos)
+        : await repository.updateListing(withPhotos);
+    if (saved.isLeft) {
+      emit(MyListingsFailure(message: saved.left.message));
+      return;
+    }
+    await _load(emit);
+  }
+
+  Future<void> _onDeleted(
+    MyListingDeleted event,
+    Emitter<MyListingsState> emit,
+  ) async {
+    emit(const MyListingsLoading());
+    final result = await repository.deleteListing(event.listingId);
+    if (result.isLeft) {
+      emit(MyListingsFailure(message: result.left.message));
+      return;
+    }
+    await _load(emit);
   }
 
   Future<void> _load(Emitter<MyListingsState> emit) async {
     emit(const MyListingsLoading());
-    try {
-      final listings = await repository.getMyListings(_ownerId);
-      emit(MyListingsSuccess(listings: listings));
-    } on Failure catch (failure) {
-      emit(MyListingsFailure(message: failure.message));
-    }
+    final result = await repository.getMyListings(_ownerId);
+    result.fold(
+      (failure) => emit(MyListingsFailure(message: failure.message)),
+      (listings) => emit(MyListingsSuccess(listings: listings)),
+    );
   }
 }

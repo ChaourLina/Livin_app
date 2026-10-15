@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/core/shared/livin_logo.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
@@ -10,7 +12,6 @@ import 'package:livin_app/features/listings/domain/entities/listing_filter.dart'
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_bloc.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_event.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_state.dart';
-import 'package:livin_app/features/listings/presentation/views/pages/listing_details_page.dart';
 import 'package:livin_app/features/listings/presentation/views/widgets/listing_card.dart';
 
 class ListingsPage extends StatefulWidget {
@@ -27,6 +28,12 @@ class _ListingsPageState extends State<ListingsPage> {
   String? _type;
   String? _city;
 
+  bool get _hasActiveFilter =>
+      _query.isNotEmpty ||
+      _transaction != null ||
+      _type != null ||
+      _city != null;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -35,52 +42,52 @@ class _ListingsPageState extends State<ListingsPage> {
 
   void _applyFilters() {
     context.read<ListingsBloc>().add(
-          ListingsFilterChanged(
-            filter: ListingFilter(
-              query: _query.isEmpty ? null : _query,
-              transactionType: _transaction,
-              city: _city,
-              type: _type,
-            ),
-          ),
-        );
+      ListingsFilterChanged(
+        filter: ListingFilter(
+          query: _query.isEmpty ? null : _query,
+          transactionType: _transaction,
+          city: _city,
+          type: _type,
+        ),
+      ),
+    );
   }
 
-  void _toggleTransaction(String value) {
-    setState(() => _transaction = _transaction == value ? null : value);
-    _applyFilters();
-  }
-
-  void _toggleType(String value) {
-    setState(() => _type = _type == value ? null : value);
+  // Un seul filtre actif à la fois : tout ce qui n'est pas passé est remis à zéro.
+  void _setFilter({String? transaction, String? type, String? city}) {
+    if (_searchController.text.isNotEmpty) _searchController.clear();
+    setState(() {
+      _query = '';
+      _transaction = transaction;
+      _type = type;
+      _city = city;
+    });
     _applyFilters();
   }
 
   Future<void> _pickCity() async {
     final selected = await showModalBottomSheet<String>(
       context: context,
-      builder: (sheetContext) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            ListTile(
-              title: const Text('Toutes les villes'),
-              onTap: () => Navigator.pop(sheetContext, ''),
+      useSafeArea: true,
+      builder: (sheetContext) => ListView(
+        shrinkWrap: true,
+        children: [
+          ListTile(
+            title: const Text('Toutes les villes'),
+            onTap: () => Navigator.pop(sheetContext, ''),
+          ),
+          ...AppConstants.cities.map(
+            (city) => ListTile(
+              title: Text(city),
+              trailing: city == _city ? const Icon(Icons.check) : null,
+              onTap: () => Navigator.pop(sheetContext, city),
             ),
-            ...AppConstants.cities.map(
-              (city) => ListTile(
-                title: Text(city),
-                trailing: city == _city ? const Icon(Icons.check) : null,
-                onTap: () => Navigator.pop(sheetContext, city),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
     if (selected == null) return;
-    setState(() => _city = selected.isEmpty ? null : selected);
-    _applyFilters();
+    _setFilter(city: selected.isEmpty ? null : selected);
   }
 
   Widget _chip({
@@ -110,6 +117,23 @@ class _ListingsPageState extends State<ListingsPage> {
     );
   }
 
+  Widget _emptyState() {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off, size: 48, color: scheme.onSurfaceVariant),
+          const SizedBox(height: 12),
+          Text(
+            'Aucune annonce trouvée',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -121,10 +145,7 @@ class _ListingsPageState extends State<ListingsPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const LivinLogo(),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const LivinLogo(), centerTitle: false),
       body: Column(
         children: [
           Padding(
@@ -133,7 +154,12 @@ class _ListingsPageState extends State<ListingsPage> {
               controller: _searchController,
               textInputAction: TextInputAction.search,
               onChanged: (value) {
-                setState(() => _query = value.trim());
+                setState(() {
+                  _query = value.trim();
+                  _transaction = null;
+                  _type = null;
+                  _city = null;
+                });
                 _applyFilters();
               },
               decoration: InputDecoration(
@@ -143,11 +169,7 @@ class _ListingsPageState extends State<ListingsPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _query = '');
-                          _applyFilters();
-                        },
+                        onPressed: _setFilter,
                       ),
                 filled: true,
                 fillColor: Colors.white,
@@ -165,30 +187,32 @@ class _ListingsPageState extends State<ListingsPage> {
               children: [
                 _chip(
                   label: 'Tous',
-                  selected: _transaction == null && _type == null,
-                  onTap: () {
-                    setState(() {
-                      _transaction = null;
-                      _type = null;
-                    });
-                    _applyFilters();
-                  },
+                  selected: !_hasActiveFilter,
+                  onTap: _setFilter,
                 ),
                 _chip(
                   label: 'Location',
                   selected: _transaction == AppConstants.rent,
-                  onTap: () => _toggleTransaction(AppConstants.rent),
+                  onTap: () => _setFilter(
+                    transaction: _transaction == AppConstants.rent
+                        ? null
+                        : AppConstants.rent,
+                  ),
                 ),
                 _chip(
                   label: 'Vente',
                   selected: _transaction == AppConstants.sale,
-                  onTap: () => _toggleTransaction(AppConstants.sale),
+                  onTap: () => _setFilter(
+                    transaction: _transaction == AppConstants.sale
+                        ? null
+                        : AppConstants.sale,
+                  ),
                 ),
                 for (final type in AppConstants.propertyTypes)
                   _chip(
                     label: capitalize(type),
                     selected: _type == type,
-                    onTap: () => _toggleType(type),
+                    onTap: () => _setFilter(type: _type == type ? null : type),
                   ),
                 _chip(
                   label: _city ?? 'Ville',
@@ -211,9 +235,9 @@ class _ListingsPageState extends State<ListingsPage> {
                         Text(state.message),
                         const SizedBox(height: 12),
                         ElevatedButton(
-                          onPressed: () => context
-                              .read<ListingsBloc>()
-                              .add(const ListingsRefreshed()),
+                          onPressed: () => context.read<ListingsBloc>().add(
+                            const ListingsRefreshed(),
+                          ),
                           child: const Text('Réessayer'),
                         ),
                       ],
@@ -221,12 +245,11 @@ class _ListingsPageState extends State<ListingsPage> {
                   );
                 }
                 if (state is ListingsSuccess) {
-                  if (state.listings.isEmpty) {
-                    return const Center(child: Text('Aucune annonce trouvée'));
-                  }
+                  if (state.listings.isEmpty) return _emptyState();
                   final count = state.listings.length;
-                  final label =
-                      count > 1 ? '$count annonces' : '$count annonce';
+                  final label = count > 1
+                      ? '$count annonces'
+                      : '$count annonce';
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     itemCount: count + 1,
@@ -243,7 +266,8 @@ class _ListingsPageState extends State<ListingsPage> {
                       final listing = state.listings[index - 1];
                       return BlocBuilder<FavoritesBloc, FavoritesState>(
                         builder: (context, favState) {
-                          final isFavorite = favState is FavoritesSuccess &&
+                          final isFavorite =
+                              favState is FavoritesSuccess &&
                               favState.favoriteIds.contains(listing.id);
                           return ListingCard(
                             listing: listing,
@@ -251,12 +275,8 @@ class _ListingsPageState extends State<ListingsPage> {
                             onFavoriteTap: () => context
                                 .read<FavoritesBloc>()
                                 .add(FavoriteToggled(listingId: listing.id)),
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ListingDetailsPage(listing: listing),
-                              ),
-                            ),
+                                                        onTap: () =>
+                                context.push(AppRoutes.listing, extra: listing),
                           );
                         },
                       );

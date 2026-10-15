@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
@@ -114,7 +115,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
     return BlocListener<MyListingsBloc, MyListingsState>(
       listener: (context, state) {
         if (state is MyListingsSuccess) {
-          Navigator.of(context).pop();
+          context.pop();
         } else if (state is MyListingsFailure) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(state.message)));

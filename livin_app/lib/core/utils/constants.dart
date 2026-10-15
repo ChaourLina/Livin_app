@@ -13,7 +13,7 @@ class AppConstants {
     'Alger',
     'Jijel',
     'Oran',
-    'Mostaganem'
+    'Mostaganem',
     'Constantine',
     'Annaba',
     'Blida',

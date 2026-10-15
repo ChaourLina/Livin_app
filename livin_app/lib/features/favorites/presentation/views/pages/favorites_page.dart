@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_bloc.dart';
 import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_event.dart';
 import 'package:livin_app/features/favorites/presentation/blocs/favorites_bloc/favorites_state.dart';
-import 'package:livin_app/features/listings/presentation/views/pages/listing_details_page.dart';
 import 'package:livin_app/features/listings/presentation/views/widgets/listing_card.dart';
 
 class FavoritesPage extends StatelessWidget {
@@ -33,11 +34,8 @@ class FavoritesPage extends StatelessWidget {
                   onFavoriteTap: () => context
                       .read<FavoritesBloc>()
                       .add(FavoriteToggled(listingId: listing.id)),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ListingDetailsPage(listing: listing),
-                    ),
-                  ),
+                      onTap: () =>
+                      context.push(AppRoutes.listing, extra: listing),
                 );
               },
             );

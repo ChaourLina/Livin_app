@@ -1,5 +1,6 @@
+import 'package:livin_app/core/error/either.dart';
 import 'package:livin_app/core/error/error_handler.dart';
-import 'package:livin_app/core/error/exceptions.dart';
+import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/listings/data/data_sources/remote/images_remote_data_source.dart';
 import 'package:livin_app/features/listings/data/data_sources/remote/listings_remote_data_source.dart';
 import 'package:livin_app/features/listings/data/models/listing_model.dart';
@@ -15,68 +16,54 @@ class ListingsRepository {
     required this.imagesDataSource,
   });
 
-  Future<List<Listing>> getListings() async {
-    try {
+  Future<Either<Failure, List<Listing>>> getListings() {
+    return guard(() async {
       final models = await remoteDataSource.getListings();
       final listings = models.map((model) => model.toEntity()).toList();
       listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return listings;
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
   List<Listing> filterListings(List<Listing> listings, ListingFilter filter) {
     return listings.where((listing) => _matches(listing, filter)).toList();
   }
 
-  Future<List<Listing>> getMyListings(String ownerId) async {
-    try {
+  Future<Either<Failure, List<Listing>>> getMyListings(String ownerId) {
+    return guard(() async {
       final models = await remoteDataSource.getListingsByOwner(ownerId);
       final listings = models.map((model) => model.toEntity()).toList();
       listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return listings;
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<List<String>> uploadImages(List<String> filePaths) async {
-    try {
+  Future<Either<Failure, List<String>>> uploadImages(List<String> filePaths) {
+    return guard(() async {
       final urls = <String>[];
       for (final path in filePaths) {
         urls.add(await imagesDataSource.uploadImage(path));
       }
       return urls;
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<Listing> createListing(Listing listing) async {
-    try {
-      final model = await remoteDataSource
-          .createListing(ListingModel.fromEntity(listing));
-      return model.toEntity();
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+  Future<Either<Failure, void>> createListing(Listing listing) {
+    return guard<void>(() async {
+      await remoteDataSource.createListing(ListingModel.fromEntity(listing));
+    });
   }
 
-  Future<void> updateListing(Listing listing) async {
-    try {
+  Future<Either<Failure, void>> updateListing(Listing listing) {
+    return guard<void>(() async {
       await remoteDataSource.updateListing(ListingModel.fromEntity(listing));
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
-  Future<void> deleteListing(String id) async {
-    try {
+  Future<Either<Failure, void>> deleteListing(String id) {
+    return guard<void>(() async {
       await remoteDataSource.deleteListing(id);
-    } on AppException catch (e) {
-      throw exceptionToFailure(e);
-    }
+    });
   }
 
   String _normalize(String text) {

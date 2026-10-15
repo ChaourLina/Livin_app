@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/core/shared/app_input.dart';
 import 'package:livin_app/core/shared/app_theme.dart';
 import 'package:livin_app/core/shared/livin_logo.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_event.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
-import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -155,11 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 8),
                           Center(
                             child: TextButton(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const RegisterPage(),
-                                ),
-                              ),
+                            onPressed: () => context.push(AppRoutes.register),
                               child: const Text(
                                 'Pas encore de compte ? Créer un compte',
                               ),
