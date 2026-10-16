@@ -56,16 +56,14 @@ class MyListingsPage extends StatelessWidget {
       ),
     );
     if (confirmed == true) {
-      bloc.add(
-        MyListingUpdated(listing: listing.copyWith(isAvailable: false)),
-      );
+      bloc.add(MyListingUpdated(listing: listing.copyWith(isAvailable: false)));
     }
   }
 
   void _reactivate(BuildContext context, Listing listing) {
     context.read<MyListingsBloc>().add(
-          MyListingUpdated(listing: listing.copyWith(isAvailable: true)),
-        );
+      MyListingUpdated(listing: listing.copyWith(isAvailable: true)),
+    );
   }
 
   Future<void> _confirmDelete(BuildContext context, Listing listing) async {
@@ -113,16 +111,17 @@ class MyListingsPage extends StatelessWidget {
                 : Image.network(
                     listing.photos.first,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Center(
-                      child: Icon(Icons.broken_image_outlined),
-                    ),
+                    errorBuilder: (_, __, ___) =>
+                        const Center(child: Icon(Icons.broken_image_outlined)),
                   ),
           ),
           if (hidden)
             Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.primary,
                   borderRadius: BorderRadius.circular(20),
@@ -174,9 +173,7 @@ class MyListingsPage extends StatelessWidget {
                         listing.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 4),
@@ -205,9 +202,9 @@ class MyListingsPage extends StatelessWidget {
                       Text(
                         price,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: scheme.primary,
-                            ),
+                          fontWeight: FontWeight.w800,
+                          color: scheme.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -273,9 +270,9 @@ class MyListingsPage extends StatelessWidget {
                     onPressed: () {
                       final ownerId = _currentUserId(context);
                       if (ownerId == null) return;
-                      context
-                          .read<MyListingsBloc>()
-                          .add(MyListingsStarted(ownerId: ownerId));
+                      context.read<MyListingsBloc>().add(
+                        MyListingsStarted(ownerId: ownerId),
+                      );
                     },
                     child: const Text('Réessayer'),
                   ),
