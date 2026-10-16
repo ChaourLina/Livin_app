@@ -111,7 +111,7 @@ class MyListingsPage extends StatelessWidget {
                 : Image.network(
                     listing.photos.first,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         const Center(child: Icon(Icons.broken_image_outlined)),
                   ),
           ),
