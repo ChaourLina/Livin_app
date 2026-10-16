@@ -13,6 +13,7 @@ class Listing extends Equatable {
   final String contact;
   final List<String> photos;
   final DateTime createdAt;
+  final bool isAvailable;
 
   const Listing({
     required this.id,
@@ -27,8 +28,10 @@ class Listing extends Equatable {
     required this.contact,
     required this.photos,
     required this.createdAt,
+    this.isAvailable = true,
   });
-    Listing copyWith({List<String>? photos}) {
+
+  Listing copyWith({List<String>? photos, bool? isAvailable}) {
     return Listing(
       id: id,
       ownerId: ownerId,
@@ -42,8 +45,10 @@ class Listing extends Equatable {
       contact: contact,
       photos: photos ?? this.photos,
       createdAt: createdAt,
+      isAvailable: isAvailable ?? this.isAvailable,
     );
   }
+
   @override
   List<Object?> get props => [
         id,
@@ -58,5 +63,6 @@ class Listing extends Equatable {
         contact,
         photos,
         createdAt,
+        isAvailable,
       ];
 }

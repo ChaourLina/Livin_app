@@ -14,6 +14,7 @@ class ListingModel {
   final String contact;
   final List<String> photos;
   final DateTime createdAt;
+  final bool isAvailable;
 
   ListingModel({
     required this.id,
@@ -28,6 +29,7 @@ class ListingModel {
     required this.contact,
     required this.photos,
     required this.createdAt,
+    this.isAvailable = true,
   });
 
   factory ListingModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class ListingModel {
       contact: json['contact'] ?? '',
       photos: List<String>.from(json['photos'] ?? []),
       createdAt: (json['createdAt'] as Timestamp).toDate(),
+      isAvailable: json['isAvailable'] ?? true,
     );
   }
 
@@ -61,6 +64,7 @@ class ListingModel {
       'contact': contact,
       'photos': photos,
       'createdAt': Timestamp.fromDate(createdAt),
+      'isAvailable': isAvailable,
     };
   }
 
@@ -78,6 +82,7 @@ class ListingModel {
       contact: contact,
       photos: photos,
       createdAt: createdAt,
+      isAvailable: isAvailable,
     );
   }
 
@@ -95,6 +100,7 @@ class ListingModel {
       contact: listing.contact,
       photos: listing.photos,
       createdAt: listing.createdAt,
+      isAvailable: listing.isAvailable,
     );
   }
 }

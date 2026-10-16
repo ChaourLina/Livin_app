@@ -99,6 +99,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
       rooms: int.parse(_roomsController.text.trim()),
       city: _city,
       contact: _contactController.text.trim(),
+      isAvailable: existing?.isAvailable ?? true,
       photos: _existingPhotos,
       createdAt: existing?.createdAt ?? DateTime.now(),
     );

@@ -23,7 +23,10 @@ class FavoritesRepository {
   ) {
     return guard(() async {
       final models = await listingsDataSource.getListingsByIds(ids);
-      return models.map((model) => model.toEntity()).toList();
+          return models
+          .map((model) => model.toEntity())
+          .where((listing) => listing.isAvailable)
+          .toList();
     });
   }
 
