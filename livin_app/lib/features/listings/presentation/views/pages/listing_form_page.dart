@@ -276,12 +276,23 @@ class _ListingFormPageState extends State<ListingFormPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _submit,
-                          child: isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
+                           child: isLoading
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      _isEditing
+                                          ? 'Enregistrement…'
+                                          : 'Publication en cours…',
+                                    ),
+                                  ],
                                 )
                               : Text(_isEditing ? 'Enregistrer' : 'Publier'),
                         ),

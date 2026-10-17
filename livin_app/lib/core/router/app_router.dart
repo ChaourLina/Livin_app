@@ -17,6 +17,7 @@ import 'package:livin_app/features/listings/presentation/views/pages/listing_for
 import 'package:livin_app/features/listings/presentation/views/pages/listings_page.dart';
 import 'package:livin_app/features/listings/presentation/views/pages/my_listings_page.dart';
 import 'package:livin_app/features/listings/presentation/views/pages/photo_viewer_page.dart';
+import 'package:livin_app/features/auth/presentation/views/pages/edit_profile_page.dart';
 
 class AppRouter {
   static GoRouter create({
@@ -79,6 +80,10 @@ class AppRouter {
               ),
             ]),
           ],
+        ),
+        GoRoute(
+          path: AppRoutes.editProfile,
+          builder: (context, state) => const EditProfilePage(),
         ),
         GoRoute(
           path: AppRoutes.listing,
