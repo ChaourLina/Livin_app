@@ -17,12 +17,14 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
@@ -85,6 +87,19 @@ class _RegisterPageState extends State<RegisterPage> {
                           (value == null || value.length < 6)
                               ? '6 caractères minimum'
                               : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _confirmController,
+                      obscureText: true,
+                      decoration: appInputDecoration(
+                        context,
+                        'Confirmer le mot de passe',
+                        icon: Icons.lock_outline,
+                      ),
+                      validator: (value) => value != _passwordController.text
+                          ? 'Les mots de passe ne correspondent pas'
+                          : null,
                     ),
                     const SizedBox(height: 24),
                     BlocBuilder<AuthBloc, AuthState>(

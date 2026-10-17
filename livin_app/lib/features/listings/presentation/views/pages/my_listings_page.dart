@@ -282,8 +282,20 @@ class MyListingsPage extends StatelessWidget {
           }
           if (state is MyListingsSuccess) {
             if (state.listings.isEmpty) {
-              return const Center(
-                child: Text('Vous n\'avez pas encore publié d\'annonce'),
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.home_work_outlined, size: 48),
+                    const SizedBox(height: 12),
+                    const Text('Vous n\'avez pas encore publié d\'annonce'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => _openForm(context),
+                      child: const Text('Publier ma première annonce'),
+                    ),
+                  ],
+                ),
               );
             }
             return ListView.builder(

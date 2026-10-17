@@ -13,6 +13,8 @@ import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/lis
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_event.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_state.dart';
 import 'package:livin_app/features/listings/presentation/views/widgets/listing_card.dart';
+import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
+import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 
 class ListingsPage extends StatefulWidget {
   const ListingsPage({super.key});
@@ -117,7 +119,7 @@ class _ListingsPageState extends State<ListingsPage> {
     );
   }
 
-  Widget _emptyState() {
+    Widget _emptyState() {
     final scheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
@@ -129,6 +131,13 @@ class _ListingsPageState extends State<ListingsPage> {
             'Aucune annonce trouvée',
             style: Theme.of(context).textTheme.titleMedium,
           ),
+          if (_hasActiveFilter) ...[
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: _setFilter,
+              child: const Text('Voir toutes les annonces'),
+            ),
+          ],
         ],
       ),
     );
@@ -146,6 +155,18 @@ class _ListingsPageState extends State<ListingsPage> {
 
     return Scaffold(
       appBar: AppBar(title: const LivinLogo(), centerTitle: false),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          final auth = context.read<AuthBloc>().state;
+          if (auth is! AuthSuccess) return;
+          context.push(
+            AppRoutes.listingForm,
+            extra: (ownerId: auth.user.uid, listing: null),
+          );
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Publier'),
+      ),
       body: Column(
         children: [
           Padding(
@@ -251,7 +272,7 @@ class _ListingsPageState extends State<ListingsPage> {
                       ? '$count annonces'
                       : '$count annonce';
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
                     itemCount: count + 1,
                     itemBuilder: (context, index) {
                       if (index == 0) {
