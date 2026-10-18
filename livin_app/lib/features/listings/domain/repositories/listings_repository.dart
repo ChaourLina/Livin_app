@@ -78,6 +78,7 @@ class ListingsRepository {
 
   bool _matches(Listing listing, ListingFilter filter) {
     if (!listing.isAvailable) return false;
+
     final query = _normalize(filter.query ?? '');
     if (query.isNotEmpty) {
       final text = _normalize(
@@ -107,6 +108,15 @@ class ListingsRepository {
     }
     if (filter.minRooms != null && listing.rooms < filter.minRooms!) {
       return false;
+    }
+    if (filter.minSurface != null && listing.surface < filter.minSurface!) {
+      return false;
+    }
+    if (filter.amenities.isNotEmpty) {
+      final owned = listing.amenities.map(_normalize).toSet();
+      final allPresent =
+          filter.amenities.every((amenity) => owned.contains(_normalize(amenity)));
+      if (!allPresent) return false;
     }
     return true;
   }
