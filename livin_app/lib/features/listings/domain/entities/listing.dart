@@ -9,8 +9,10 @@ class Listing extends Equatable {
   final String transactionType;
   final int price;
   final int rooms;
+  final int surface;
   final String city;
   final String contact;
+  final List<String> amenities;
   final List<String> photos;
   final DateTime createdAt;
   final bool isAvailable;
@@ -28,6 +30,8 @@ class Listing extends Equatable {
     required this.contact,
     required this.photos,
     required this.createdAt,
+    this.surface = 0,
+    this.amenities = const [],
     this.isAvailable = true,
   });
 
@@ -41,8 +45,10 @@ class Listing extends Equatable {
       transactionType: transactionType,
       price: price,
       rooms: rooms,
+      surface: surface,
       city: city,
       contact: contact,
+      amenities: amenities,
       photos: photos ?? this.photos,
       createdAt: createdAt,
       isAvailable: isAvailable ?? this.isAvailable,
@@ -59,8 +65,10 @@ class Listing extends Equatable {
         transactionType,
         price,
         rooms,
+        surface,
         city,
         contact,
+        amenities,
         photos,
         createdAt,
         isAvailable,

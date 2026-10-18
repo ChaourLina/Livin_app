@@ -10,8 +10,10 @@ class ListingModel {
   final String transactionType;
   final int price;
   final int rooms;
+  final int surface;
   final String city;
   final String contact;
+  final List<String> amenities;
   final List<String> photos;
   final DateTime createdAt;
   final bool isAvailable;
@@ -29,6 +31,8 @@ class ListingModel {
     required this.contact,
     required this.photos,
     required this.createdAt,
+    this.surface = 0,
+    this.amenities = const [],
     this.isAvailable = true,
   });
 
@@ -42,8 +46,10 @@ class ListingModel {
       transactionType: json['transactionType'],
       price: (json['price'] as num).toInt(),
       rooms: (json['rooms'] as num).toInt(),
+      surface: (json['surface'] as num?)?.toInt() ?? 0,
       city: json['city'],
       contact: json['contact'] ?? '',
+      amenities: List<String>.from(json['amenities'] ?? []),
       photos: List<String>.from(json['photos'] ?? []),
       createdAt: (json['createdAt'] as Timestamp).toDate(),
       isAvailable: json['isAvailable'] ?? true,
@@ -60,8 +66,10 @@ class ListingModel {
       'transactionType': transactionType,
       'price': price,
       'rooms': rooms,
+      'surface': surface,
       'city': city,
       'contact': contact,
+      'amenities': amenities,
       'photos': photos,
       'createdAt': Timestamp.fromDate(createdAt),
       'isAvailable': isAvailable,
@@ -78,8 +86,10 @@ class ListingModel {
       transactionType: transactionType,
       price: price,
       rooms: rooms,
+      surface: surface,
       city: city,
       contact: contact,
+      amenities: amenities,
       photos: photos,
       createdAt: createdAt,
       isAvailable: isAvailable,
@@ -96,8 +106,10 @@ class ListingModel {
       transactionType: listing.transactionType,
       price: listing.price,
       rooms: listing.rooms,
+      surface: listing.surface,
       city: listing.city,
       contact: listing.contact,
+      amenities: listing.amenities,
       photos: listing.photos,
       createdAt: listing.createdAt,
       isAvailable: listing.isAvailable,
