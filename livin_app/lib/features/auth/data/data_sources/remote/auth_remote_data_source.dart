@@ -21,12 +21,17 @@ class AuthRemoteDataSource {
         email: email,
         password: password,
       );
-      final doc =
-          await _firestore.collection('users').doc(credential.user!.uid).get();
+      final user = credential.user!;
+      final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) {
         throw const NotFoundException('Profil utilisateur introuvable.');
       }
-      return AuthModel.fromJson(doc.data()!);
+      final data = doc.data()!;
+      if (data['verificationRequired'] == true && !user.emailVerified) {
+        await _auth.signOut();
+        throw const EmailNotVerifiedException();
+      }
+      return AuthModel.fromJson(data);
     } on FirebaseAuthException catch (e) {
       throw handleAuthError(e);
     } on FirebaseException {
@@ -34,7 +39,7 @@ class AuthRemoteDataSource {
     }
   }
 
-  Future<AuthModel> register({
+  Future<void> register({
     required String name,
     required String email,
     required String password,
@@ -44,17 +49,50 @@ class AuthRemoteDataSource {
         email: email,
         password: password,
       );
-      final model = AuthModel(
-        uid: credential.user!.uid,
-        email: email,
-        name: name,
-      );
-      await _firestore.collection('users').doc(model.uid).set(model.toJson());
-      return model;
+      final user = credential.user!;
+      try {
+        final model = AuthModel(uid: user.uid, email: email, name: name);
+        await _firestore.collection('users').doc(user.uid).set({
+          ...model.toJson(),
+          'verificationRequired': true,
+        });
+        await user.sendEmailVerification();
+      } finally {
+        await _auth.signOut();
+      }
     } on FirebaseAuthException catch (e) {
       throw handleAuthError(e);
     } on FirebaseException {
       throw const ServerException();
+    }
+  }
+
+  Future<void> resendVerificationEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      try {
+        if (!credential.user!.emailVerified) {
+          await credential.user!.sendEmailVerification();
+        }
+      } finally {
+        await _auth.signOut();
+      }
+    } on FirebaseAuthException catch (e) {
+      throw handleAuthError(e);
+    }
+  }
+
+  Future<void> sendPasswordReset(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw handleAuthError(e);
     }
   }
 
@@ -68,12 +106,18 @@ class AuthRemoteDataSource {
     try {
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) return null;
-      return AuthModel.fromJson(doc.data()!);
+      final data = doc.data()!;
+      if (data['verificationRequired'] == true && !user.emailVerified) {
+        await _auth.signOut();
+        return null;
+      }
+      return AuthModel.fromJson(data);
     } on FirebaseException {
       throw const ServerException();
     }
   }
-    Future<AuthModel> updateProfile({
+
+  Future<AuthModel> updateProfile({
     required String uid,
     required String name,
     required String phone,

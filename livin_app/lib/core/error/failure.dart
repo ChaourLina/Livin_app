@@ -19,6 +19,11 @@ class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message = 'Ressource introuvable.']);
 }
 
+class EmailNotVerifiedFailure extends Failure {
+  const EmailNotVerifiedFailure(
+  [super.message = 'Email non vérifié. Vérifiez votre boîte mail.']);
+}
+
 class UnknownFailure extends Failure {
   const UnknownFailure([super.message = 'Une erreur inconnue est survenue.']);
 }

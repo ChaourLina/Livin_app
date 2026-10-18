@@ -19,6 +19,11 @@ class NotFoundException extends AppException {
   const NotFoundException([super.message = 'Ressource introuvable.']);
 }
 
+class EmailNotVerifiedException extends AppException {
+  const EmailNotVerifiedException(
+  [super.message = 'Email non vérifié. Vérifiez votre boîte mail.']);
+}
+
 class UnknownException extends AppException {
   const UnknownException([super.message = 'Une erreur inconnue est survenue.']);
 }

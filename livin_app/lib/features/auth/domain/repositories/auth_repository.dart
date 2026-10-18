@@ -25,19 +25,34 @@ class AuthRepository {
     });
   }
 
-  Future<Either<Failure, AuthUser>> register({
+  Future<Either<Failure, void>> register({
     required String name,
     required String email,
     required String password,
   }) {
-    return guard(() async {
-      final model = await remoteDataSource.register(
+    return guard<void>(
+      () => remoteDataSource.register(
         name: name,
         email: email,
         password: password,
-      );
-      return model.toEntity();
-    });
+      ),
+    );
+  }
+
+  Future<Either<Failure, void>> resendVerificationEmail({
+    required String email,
+    required String password,
+  }) {
+    return guard<void>(
+      () => remoteDataSource.resendVerificationEmail(
+        email: email,
+        password: password,
+      ),
+    );
+  }
+
+  Future<Either<Failure, void>> sendPasswordReset(String email) {
+    return guard<void>(() => remoteDataSource.sendPasswordReset(email));
   }
 
   Future<Either<Failure, AuthUser?>> getCurrentUser() {

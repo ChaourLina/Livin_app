@@ -20,6 +20,33 @@ class AuthUnauthenticated extends AuthState {
   const AuthUnauthenticated();
 }
 
+class AuthVerificationSent extends AuthState {
+  final String email;
+
+  const AuthVerificationSent({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class AuthEmailNotVerified extends AuthState {
+  final String email;
+
+  const AuthEmailNotVerified({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class AuthPasswordResetSent extends AuthState {
+  final String email;
+
+  const AuthPasswordResetSent({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
 class AuthSuccess extends AuthState {
   final AuthUser user;
 

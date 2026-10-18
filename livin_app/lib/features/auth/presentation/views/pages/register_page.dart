@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:livin_app/core/shared/app_input.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_event.dart';
@@ -43,7 +44,9 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthFailure &&
+        if (state is AuthVerificationSent) {
+          context.pop();
+        } else if (state is AuthFailure &&
             (ModalRoute.of(context)?.isCurrent ?? false)) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(state.message)));
@@ -62,7 +65,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: appInputDecoration(context, 'Nom', icon: Icons.person_outline),
+                      decoration: appInputDecoration(
+                        context,
+                        'Nom',
+                        icon: Icons.person_outline,
+                      ),
                       validator: (value) =>
                           (value == null || value.trim().isEmpty)
                               ? 'Nom obligatoire'
@@ -72,7 +79,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: appInputDecoration(context, 'Email', icon: Icons.mail_outline),
+                      decoration: appInputDecoration(
+                        context,
+                        'Email',
+                        icon: Icons.mail_outline,
+                      ),
                       validator: (value) =>
                           (value == null || !value.contains('@'))
                               ? 'Email invalide'
@@ -82,7 +93,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: appInputDecoration(context, 'Mot de passe', icon: Icons.lock_outline),
+                      decoration: appInputDecoration(
+                        context,
+                        'Mot de passe',
+                        icon: Icons.lock_outline,
+                      ),
                       validator: (value) =>
                           (value == null || value.length < 6)
                               ? '6 caractères minimum'
@@ -100,6 +115,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       validator: (value) => value != _passwordController.text
                           ? 'Les mots de passe ne correspondent pas'
                           : null,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Un email de vérification vous sera envoyé pour activer votre compte.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     BlocBuilder<AuthBloc, AuthState>(

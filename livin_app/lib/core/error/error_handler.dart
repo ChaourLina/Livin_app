@@ -10,13 +10,14 @@ AppException handleAuthError(FirebaseAuthException e) {
     case 'user-not-found':
     case 'wrong-password':
     case 'invalid-credential':
-    case 'invalid-email':
       return const UnauthorizedException();
+    case 'invalid-email':
+      return const ServerException('Adresse email invalide.');
     case 'email-already-in-use':
       return const ServerException('Cet email est déjà utilisé.');
     case 'weak-password':
       return const ServerException(
-          'Mot de passe trop faible (6 caractères minimum).');
+      'Mot de passe trop faible (6 caractères minimum).');
     case 'too-many-requests':
       return const ServerException('Trop de tentatives. Réessayez plus tard.');
     default:
@@ -40,6 +41,7 @@ AppException handleFirestoreError(FirebaseException e) {
 }
 
 Failure exceptionToFailure(AppException e) {
+  if (e is EmailNotVerifiedException) return EmailNotVerifiedFailure(e.message);
   if (e is NetworkException) return NetworkFailure(e.message);
   if (e is UnauthorizedException) return UnauthorizedFailure(e.message);
   if (e is NotFoundException) return NotFoundFailure(e.message);

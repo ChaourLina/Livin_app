@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/auth/domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -10,6 +11,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStarted>(_onStarted);
     on<AuthLoginSubmitted>(_onLoginSubmitted);
     on<AuthRegisterSubmitted>(_onRegisterSubmitted);
+    on<AuthPasswordResetRequested>(_onPasswordResetRequested);
+    on<AuthVerificationEmailRequested>(_onVerificationEmailRequested);
     on<AuthLoggedOut>(_onLoggedOut);
     on<AuthProfileUpdated>(_onProfileUpdated);
   }
@@ -19,9 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (_) => emit(const AuthUnauthenticated()),
       (user) => emit(
-        user == null
-            ? const AuthUnauthenticated()
-            : AuthSuccess(user: user),
+        user == null ? const AuthUnauthenticated() : AuthSuccess(user: user),
       ),
     );
   }
@@ -36,7 +37,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       password: event.password,
     );
     result.fold(
-      (failure) => emit(AuthFailure(message: failure.message)),
+      (failure) {
+        if (failure is EmailNotVerifiedFailure) {
+          emit(AuthEmailNotVerified(email: event.email));
+        } else {
+          emit(AuthFailure(message: failure.message));
+        }
+      },
       (user) => emit(AuthSuccess(user: user)),
     );
   }
@@ -53,7 +60,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(AuthFailure(message: failure.message)),
-      (user) => emit(AuthSuccess(user: user)),
+      (_) => emit(AuthVerificationSent(email: event.email)),
+    );
+  }
+
+  Future<void> _onPasswordResetRequested(
+    AuthPasswordResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    final result = await repository.sendPasswordReset(event.email);
+    result.fold(
+      (failure) => emit(AuthFailure(message: failure.message)),
+      (_) => emit(AuthPasswordResetSent(email: event.email)),
+    );
+  }
+
+  Future<void> _onVerificationEmailRequested(
+    AuthVerificationEmailRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    final result = await repository.resendVerificationEmail(
+      email: event.email,
+      password: event.password,
+    );
+    result.fold(
+      (failure) => emit(AuthFailure(message: failure.message)),
+      (_) => emit(AuthVerificationSent(email: event.email)),
     );
   }
 

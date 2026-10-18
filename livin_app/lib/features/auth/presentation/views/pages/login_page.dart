@@ -39,14 +39,67 @@ class _LoginPageState extends State<LoginPage> {
         );
   }
 
+  void _resendVerification() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) return;
+    context.read<AuthBloc>().add(
+          AuthVerificationEmailRequested(email: email, password: password),
+        );
+  }
+
+  Future<void> _showResetDialog() async {
+    final email = await showDialog<String>(
+      context: context,
+      builder: (_) =>
+          _ResetPasswordDialog(initialEmail: _emailController.text.trim()),
+    );
+    if (email == null || !mounted) return;
+    if (!email.contains('@')) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Email invalide')));
+      return;
+    }
+    context.read<AuthBloc>().add(AuthPasswordResetRequested(email: email));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthFailure &&
-            (ModalRoute.of(context)?.isCurrent ?? false)) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.message)));
+        final messenger = ScaffoldMessenger.of(context);
+        final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+        if (state is AuthFailure && isCurrent) {
+          messenger.showSnackBar(SnackBar(content: Text(state.message)));
+        } else if (state is AuthEmailNotVerified && isCurrent) {
+          messenger.showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Email non vérifié. Cliquez sur le lien reçu par email (pensez aux spams).',
+              ),
+              duration: const Duration(seconds: 8),
+              action: SnackBarAction(
+                label: 'Renvoyer',
+                onPressed: _resendVerification,
+              ),
+            ),
+          );
+        } else if (state is AuthVerificationSent) {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Email de vérification envoyé à ${state.email}. Vérifiez aussi vos spams.',
+              ),
+            ),
+          );
+        } else if (state is AuthPasswordResetSent && isCurrent) {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                'Si un compte existe pour ${state.email}, un lien de réinitialisation vient d\'être envoyé.',
+              ),
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -133,7 +186,14 @@ class _LoginPageState extends State<LoginPage> {
                                     ? '6 caractères minimum'
                                     : null,
                           ),
-                          const SizedBox(height: 24),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _showResetDialog,
+                              child: const Text('Mot de passe oublié ?'),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                           BlocBuilder<AuthBloc, AuthState>(
                             builder: (context, state) {
                               final isLoading = state is AuthLoading;
@@ -156,7 +216,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 8),
                           Center(
                             child: TextButton(
-                            onPressed: () => context.push(AppRoutes.register),
+                              onPressed: () => context.push(AppRoutes.register),
                               child: const Text(
                                 'Pas encore de compte ? Créer un compte',
                               ),
@@ -172,6 +232,67 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ResetPasswordDialog extends StatefulWidget {
+  final String initialEmail;
+
+  const _ResetPasswordDialog({required this.initialEmail});
+
+  @override
+  State<_ResetPasswordDialog> createState() => _ResetPasswordDialogState();
+}
+
+class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialEmail);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Mot de passe oublié'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Nous vous enverrons un lien pour choisir un nouveau mot de passe.',
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.emailAddress,
+            decoration: appInputDecoration(
+              context,
+              'Email',
+              icon: Icons.mail_outline,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Annuler'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text('Envoyer'),
+        ),
+      ],
     );
   }
 }
