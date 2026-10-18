@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:livin_app/core/utils/amenities.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
@@ -30,11 +31,13 @@ class _ListingFormPageState extends State<ListingFormPage> {
   late final TextEditingController _descriptionController;
   late final TextEditingController _priceController;
   late final TextEditingController _roomsController;
+  late final TextEditingController _surfaceController;
   late final TextEditingController _contactController;
   late String _city;
   late String _type;
   late String _transaction;
   late List<String> _existingPhotos;
+  late final Set<String> _amenities;
   final List<String> _newImagePaths = [];
 
   bool get _isEditing => widget.listing != null;
@@ -44,17 +47,26 @@ class _ListingFormPageState extends State<ListingFormPage> {
     super.initState();
     final listing = widget.listing;
     _titleController = TextEditingController(text: listing?.title ?? '');
-    _descriptionController =
-        TextEditingController(text: listing?.description ?? '');
-    _priceController =
-        TextEditingController(text: listing?.price.toString() ?? '');
-    _roomsController =
-        TextEditingController(text: listing?.rooms.toString() ?? '');
+    _descriptionController = TextEditingController(
+      text: listing?.description ?? '',
+    );
+    _priceController = TextEditingController(
+      text: listing?.price.toString() ?? '',
+    );
+    _roomsController = TextEditingController(
+      text: listing?.rooms.toString() ?? '',
+    );
+    _surfaceController = TextEditingController(
+      text: (listing != null && listing.surface > 0)
+          ? listing.surface.toString()
+          : '',
+    );
     _contactController = TextEditingController(text: listing?.contact ?? '');
     _city = listing?.city ?? AppConstants.cities.first;
     _type = listing?.type ?? AppConstants.propertyTypes.first;
     _transaction = listing?.transactionType ?? AppConstants.rent;
     _existingPhotos = List<String>.from(listing?.photos ?? const []);
+    _amenities = Set<String>.from(listing?.amenities ?? const []);
   }
 
   @override
@@ -63,12 +75,14 @@ class _ListingFormPageState extends State<ListingFormPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _roomsController.dispose();
+    _surfaceController.dispose();
     _contactController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImages() async {
-    final remaining = _maxPhotos - _existingPhotos.length - _newImagePaths.length;
+    final remaining =
+        _maxPhotos - _existingPhotos.length - _newImagePaths.length;
     if (remaining <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('5 photos maximum par annonce')),
@@ -97,11 +111,13 @@ class _ListingFormPageState extends State<ListingFormPage> {
       transactionType: _transaction,
       price: int.parse(_priceController.text.trim()),
       rooms: int.parse(_roomsController.text.trim()),
+      surface: int.parse(_surfaceController.text.trim()),
       city: _city,
       contact: _contactController.text.trim(),
-      isAvailable: existing?.isAvailable ?? true,
+      amenities: Amenities.all.where(_amenities.contains).toList(),
       photos: _existingPhotos,
       createdAt: existing?.createdAt ?? DateTime.now(),
+      isAvailable: existing?.isAvailable ?? true,
     );
     final bloc = context.read<MyListingsBloc>();
     if (existing == null) {
@@ -138,9 +154,13 @@ class _ListingFormPageState extends State<ListingFormPage> {
                     child: SegmentedButton<String>(
                       segments: const [
                         ButtonSegment<String>(
-                            value: AppConstants.rent, label: Text('Location')),
+                          value: AppConstants.rent,
+                          label: Text('Location'),
+                        ),
                         ButtonSegment<String>(
-                            value: AppConstants.sale, label: Text('Vente')),
+                          value: AppConstants.sale,
+                          label: Text('Vente'),
+                        ),
                       ],
                       selected: {_transaction},
                       onSelectionChanged: (selection) =>
@@ -151,7 +171,8 @@ class _ListingFormPageState extends State<ListingFormPage> {
                   TextFormField(
                     controller: _titleController,
                     decoration: const InputDecoration(labelText: 'Titre'),
-                    validator: (value) => (value == null || value.trim().isEmpty)
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty)
                         ? 'Titre obligatoire'
                         : null,
                   ),
@@ -160,7 +181,8 @@ class _ListingFormPageState extends State<ListingFormPage> {
                     controller: _descriptionController,
                     maxLines: 4,
                     decoration: const InputDecoration(labelText: 'Description'),
-                    validator: (value) => (value == null || value.trim().isEmpty)
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty)
                         ? 'Description obligatoire'
                         : null,
                   ),
@@ -171,8 +193,9 @@ class _ListingFormPageState extends State<ListingFormPage> {
                         child: TextFormField(
                           controller: _priceController,
                           keyboardType: TextInputType.number,
-                          decoration:
-                              const InputDecoration(labelText: 'Prix (DA)'),
+                          decoration: const InputDecoration(
+                            labelText: 'Prix (DA)',
+                          ),
                           validator: (value) {
                             final price = int.tryParse(value?.trim() ?? '');
                             return (price == null || price <= 0)
@@ -186,8 +209,9 @@ class _ListingFormPageState extends State<ListingFormPage> {
                         child: TextFormField(
                           controller: _roomsController,
                           keyboardType: TextInputType.number,
-                          decoration:
-                              const InputDecoration(labelText: 'Chambres'),
+                          decoration: const InputDecoration(
+                            labelText: 'Chambres',
+                          ),
                           validator: (value) {
                             final rooms = int.tryParse(value?.trim() ?? '');
                             return (rooms == null || rooms < 0)
@@ -200,34 +224,85 @@ class _ListingFormPageState extends State<ListingFormPage> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    controller: _surfaceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Surface (m²)',
+                    ),
+                    validator: (value) {
+                      final surface = int.tryParse(value?.trim() ?? '');
+                      return (surface == null || surface <= 0)
+                          ? 'Surface invalide'
+                          : null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: _contactController,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                        labelText: 'Téléphone de contact'),
+                      labelText: 'Téléphone de contact',
+                    ),
                     validator: (value) =>
                         (value == null || value.trim().length < 8)
-                            ? 'Numéro invalide'
-                            : null,
+                        ? 'Numéro invalide'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _city,
+                    initialValue: _city,
                     decoration: const InputDecoration(labelText: 'Ville'),
                     items: AppConstants.cities
-                        .map((city) =>
-                            DropdownMenuItem(value: city, child: Text(city)))
+                        .map(
+                          (city) =>
+                              DropdownMenuItem(value: city, child: Text(city)),
+                        )
                         .toList(),
                     onChanged: (value) => setState(() => _city = value!),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _type,
+                    initialValue: _type,
                     decoration: const InputDecoration(labelText: 'Type'),
                     items: AppConstants.propertyTypes
-                        .map((type) => DropdownMenuItem(
-                            value: type, child: Text(capitalize(type))))
+                        .map(
+                          (type) => DropdownMenuItem(
+                            value: type,
+                            child: Text(capitalize(type)),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) => setState(() => _type = value!),
+                  ),
+                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Équipements',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final amenity in Amenities.all)
+                          FilterChip(
+                            label: Text(amenity),
+                            selected: _amenities.contains(amenity),
+                            onSelected: (selected) => setState(() {
+                              if (selected) {
+                                _amenities.add(amenity);
+                              } else {
+                                _amenities.remove(amenity);
+                              }
+                            }),
+                          ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Align(
@@ -276,7 +351,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _submit,
-                           child: isLoading
+                          child: isLoading
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -284,7 +359,8 @@ class _ListingFormPageState extends State<ListingFormPage> {
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2),
+                                        strokeWidth: 2,
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Text(

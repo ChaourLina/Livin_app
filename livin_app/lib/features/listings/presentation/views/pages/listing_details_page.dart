@@ -158,6 +158,8 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                     Chip(label: Text(capitalize(listing.type))),
                     Chip(label: Text(listing.city)),
                     Chip(label: Text('${listing.rooms} chambres')),
+                      if (listing.surface > 0)
+                      Chip(label: Text('${listing.surface} m²')),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -167,6 +169,22 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(listing.description),
+                 if (listing.amenities.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    'Équipements',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final amenity in listing.amenities)
+                        Chip(label: Text(amenity)),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Text(
                   'Contacter le vendeur',
