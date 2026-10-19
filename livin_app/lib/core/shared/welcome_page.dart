@@ -17,7 +17,7 @@ class WelcomePage extends StatelessWidget {
           Image.asset(
             'assets/images/welcome.png',
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_, _, _) =>
                 const ColoredBox(color: AppTheme.primary),
           ),
           const DecoratedBox(
