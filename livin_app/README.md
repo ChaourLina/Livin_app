@@ -1,17 +1,46 @@
-# livin_app
+# Livin
 
-A new Flutter project.
+Real estate app (buy / rent) built with Flutter, BLoC and Firebase.
 
-## Getting Started
+## Features
+- Onboarding screens on first launch
+- Sign up with email verification, login, password reset, persistent session
+- Profile: view and edit name, phone, address and photo
+- Browse listings, search by keyword, filter by offer (sale / rent), type and wilaya
+- Advanced filters: price range, minimum surface, minimum rooms, amenities
+- Listing details with surface, amenities and full-screen zoomable photos
+- Publish, edit and delete your own listings, with photos
+- Mark a listing as sold / rented to hide it, and reactivate it
+- Favorites
+- Contact the seller via WhatsApp or phone call
+- Offline banner
 
-This project is a starting point for a Flutter application.
+## Architecture
+Feature-first, three layers per feature (hybrid / simplified Clean Architecture):
+- `data`: remote data sources (Firebase, Cloudinary) and models
+- `domain`: entities and repositories (return `Either<Failure, T>`)
+- `presentation`: BLoCs (event / state / bloc) and views
 
-A few resources to get you started if this is your first Flutter project:
+Shared code lives in `lib/core` (router, dependency injection, error handling, theme, utils).
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Data flow: `Page -> Event -> Bloc -> Repository -> Data source -> Firebase / Cloudinary`
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech
+- State management: flutter_bloc
+- Navigation: go_router (auth-aware `redirect` + `refreshListenable`)
+- Dependency injection: get_it
+- Backend: Firebase Auth + Cloud Firestore (security rules in `firestore.rules`)
+- Images: Cloudinary (unsigned upload preset)
+- Error handling: custom `Failure` classes + `Either`
+
+## Run
+    flutter pub get
+    flutter run
+
+## Tests
+    flutter test
+
+## Known limitations
+- No pagination: listings are loaded once and filtered on the device.
+- Cloudinary upload preset is unsigned (acceptable for a prototype).
+- No map view and no admin panel yet.
