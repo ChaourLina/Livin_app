@@ -25,15 +25,17 @@ class AuthRegisterSubmitted extends AuthEvent {
   final String name;
   final String email;
   final String password;
+  final String address;
 
   const AuthRegisterSubmitted({
     required this.name,
     required this.email,
     required this.password,
+    required this.address,
   });
 
   @override
-  List<Object?> get props => [name, email, password];
+  List<Object?> get props => [name, email, password, address];
 }
 
 class AuthPasswordResetRequested extends AuthEvent {
@@ -65,14 +67,16 @@ class AuthLoggedOut extends AuthEvent {
 class AuthProfileUpdated extends AuthEvent {
   final String name;
   final String phone;
+  final String address;
   final String? newPhotoPath;
 
   const AuthProfileUpdated({
     required this.name,
     required this.phone,
+    required this.address,
     this.newPhotoPath,
   });
 
   @override
-  List<Object?> get props => [name, phone, newPhotoPath];
+  List<Object?> get props => [name, phone, address, newPhotoPath];
 }

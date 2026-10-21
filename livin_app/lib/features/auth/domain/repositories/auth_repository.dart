@@ -29,12 +29,14 @@ class AuthRepository {
     required String name,
     required String email,
     required String password,
+    required String address,
   }) {
     return guard<void>(
       () => remoteDataSource.register(
         name: name,
         email: email,
         password: password,
+        address: address,
       ),
     );
   }
@@ -66,6 +68,7 @@ class AuthRepository {
     required AuthUser user,
     required String name,
     required String phone,
+    required String address,
     String? newPhotoPath,
   }) {
     return guard(() async {
@@ -77,6 +80,7 @@ class AuthRepository {
         uid: user.uid,
         name: name,
         phone: phone,
+        address: address,
         photoUrl: photoUrl,
       );
       return model.toEntity();

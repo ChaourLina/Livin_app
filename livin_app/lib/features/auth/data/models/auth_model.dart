@@ -5,6 +5,7 @@ class AuthModel {
   final String email;
   final String name;
   final String phone;
+  final String address;
   final String photoUrl;
 
   AuthModel({
@@ -12,6 +13,7 @@ class AuthModel {
     required this.email,
     required this.name,
     this.phone = '',
+    this.address = '',
     this.photoUrl = '',
   });
 
@@ -21,6 +23,7 @@ class AuthModel {
       email: json['email'],
       name: json['name'],
       phone: json['phone'] ?? '',
+      address: json['address'] ?? '',
       photoUrl: json['photoUrl'] ?? '',
     );
   }
@@ -31,6 +34,7 @@ class AuthModel {
       'email': email,
       'name': name,
       'phone': phone,
+      'address': address,
       'photoUrl': photoUrl,
     };
   }
@@ -41,6 +45,7 @@ class AuthModel {
       email: email,
       name: name,
       phone: phone,
+      address: address,
       photoUrl: photoUrl,
     );
   }
@@ -51,6 +56,7 @@ class AuthModel {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      address: user.address,
       photoUrl: user.photoUrl,
     );
   }

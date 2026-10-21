@@ -43,6 +43,7 @@ class AuthRemoteDataSource {
     required String name,
     required String email,
     required String password,
+    required String address,
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -51,7 +52,12 @@ class AuthRemoteDataSource {
       );
       final user = credential.user!;
       try {
-        final model = AuthModel(uid: user.uid, email: email, name: name);
+        final model = AuthModel(
+          uid: user.uid,
+          email: email,
+          name: name,
+          address: address,
+        );
         await _firestore.collection('users').doc(user.uid).set({
           ...model.toJson(),
           'verificationRequired': true,
@@ -121,11 +127,17 @@ class AuthRemoteDataSource {
     required String uid,
     required String name,
     required String phone,
+    required String address,
     required String photoUrl,
   }) async {
     try {
       final ref = _firestore.collection('users').doc(uid);
-      await ref.update({'name': name, 'phone': phone, 'photoUrl': photoUrl});
+      await ref.update({
+        'name': name,
+        'phone': phone,
+        'address': address,
+        'photoUrl': photoUrl,
+      });
       final doc = await ref.get();
       return AuthModel.fromJson(doc.data()!);
     } on FirebaseException catch (e) {

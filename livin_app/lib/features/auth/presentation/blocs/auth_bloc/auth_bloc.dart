@@ -57,6 +57,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       name: event.name,
       email: event.email,
       password: event.password,
+      address: event.address,
     );
     result.fold(
       (failure) => emit(AuthFailure(message: failure.message)),
@@ -110,6 +111,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       user: current.user,
       name: event.name,
       phone: event.phone,
+      address: event.address,
       newPhotoPath: event.newPhotoPath,
     );
     result.fold(

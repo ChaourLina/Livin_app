@@ -17,6 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
 
@@ -24,6 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -36,6 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
             name: _nameController.text.trim(),
             email: _emailController.text.trim(),
             password: _passwordController.text,
+            address: _addressController.text.trim(),
           ),
         );
   }
@@ -87,6 +90,21 @@ class _RegisterPageState extends State<RegisterPage> {
                       validator: (value) =>
                           (value == null || !value.contains('@'))
                               ? 'Email invalide'
+                              : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _addressController,
+                      keyboardType: TextInputType.streetAddress,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: appInputDecoration(
+                        context,
+                        'Adresse',
+                        icon: Icons.location_on_outlined,
+                      ),
+                      validator: (value) =>
+                          (value == null || value.trim().length < 5)
+                              ? 'Adresse trop courte'
                               : null,
                     ),
                     const SizedBox(height: 16),

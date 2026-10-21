@@ -105,6 +105,13 @@ class ProfilePage extends StatelessWidget {
                       'Téléphone',
                       user.phone.isEmpty ? 'Non renseigné' : user.phone,
                     ),
+                    const Divider(height: 1),
+                    _infoTile(
+                      context,
+                      Icons.location_on_outlined,
+                      'Adresse',
+                      user.address.isEmpty ? 'Non renseignée' : user.address,
+                    ),
                   ],
                 ),
               ),

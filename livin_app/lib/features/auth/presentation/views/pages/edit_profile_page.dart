@@ -21,6 +21,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _picker = ImagePicker();
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
+  late final TextEditingController _addressController;
   late final TextEditingController _emailController;
   String? _newPhotoPath;
 
@@ -31,6 +32,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final user = state is AuthSuccess ? state.user : null;
     _nameController = TextEditingController(text: user?.name ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
+    _addressController = TextEditingController(text: user?.address ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
   }
 
@@ -38,6 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     _emailController.dispose();
     super.dispose();
   }
@@ -58,6 +61,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           AuthProfileUpdated(
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
+            address: _addressController.text.trim(),
             newPhotoPath: _newPhotoPath,
           ),
         );
@@ -154,6 +158,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         final text = value?.trim() ?? '';
                         if (text.isNotEmpty && text.length < 8) {
                           return 'Numéro invalide';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _addressController,
+                      keyboardType: TextInputType.streetAddress,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: appInputDecoration(
+                        context,
+                        'Adresse',
+                        icon: Icons.location_on_outlined,
+                      ),
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isNotEmpty && text.length < 5) {
+                          return 'Adresse trop courte';
                         }
                         return null;
                       },
