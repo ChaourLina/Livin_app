@@ -16,6 +16,8 @@ class Listing extends Equatable {
   final List<String> photos;
   final DateTime createdAt;
   final bool isAvailable;
+  final double? latitude;
+  final double? longitude;
 
   const Listing({
     required this.id,
@@ -33,7 +35,11 @@ class Listing extends Equatable {
     this.surface = 0,
     this.amenities = const [],
     this.isAvailable = true,
+    this.latitude,
+    this.longitude,
   });
+
+  bool get hasLocation => latitude != null && longitude != null;
 
   Listing copyWith({List<String>? photos, bool? isAvailable}) {
     return Listing(
@@ -52,6 +58,8 @@ class Listing extends Equatable {
       photos: photos ?? this.photos,
       createdAt: createdAt,
       isAvailable: isAvailable ?? this.isAvailable,
+      latitude: latitude,
+      longitude: longitude,
     );
   }
 
@@ -72,5 +80,7 @@ class Listing extends Equatable {
         photos,
         createdAt,
         isAvailable,
+        latitude,
+        longitude,
       ];
 }

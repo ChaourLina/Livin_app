@@ -17,6 +17,8 @@ class ListingModel {
   final List<String> photos;
   final DateTime createdAt;
   final bool isAvailable;
+  final double? latitude;
+  final double? longitude;
 
   ListingModel({
     required this.id,
@@ -34,6 +36,8 @@ class ListingModel {
     this.surface = 0,
     this.amenities = const [],
     this.isAvailable = true,
+    this.latitude,
+    this.longitude,
   });
 
   factory ListingModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +57,8 @@ class ListingModel {
       photos: List<String>.from(json['photos'] ?? []),
       createdAt: (json['createdAt'] as Timestamp).toDate(),
       isAvailable: json['isAvailable'] ?? true,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
   }
 
@@ -73,6 +79,8 @@ class ListingModel {
       'photos': photos,
       'createdAt': Timestamp.fromDate(createdAt),
       'isAvailable': isAvailable,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 
@@ -93,6 +101,8 @@ class ListingModel {
       photos: photos,
       createdAt: createdAt,
       isAvailable: isAvailable,
+      latitude: latitude,
+      longitude: longitude,
     );
   }
 
@@ -113,6 +123,8 @@ class ListingModel {
       photos: listing.photos,
       createdAt: listing.createdAt,
       isAvailable: listing.isAvailable,
+      latitude: listing.latitude,
+      longitude: listing.longitude,
     );
   }
 }
