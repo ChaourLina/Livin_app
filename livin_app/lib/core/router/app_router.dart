@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/core/shared/home_shell.dart';
 import 'package:livin_app/core/shared/splash_page.dart';
@@ -18,6 +19,7 @@ import 'package:livin_app/features/listings/presentation/views/pages/listings_pa
 import 'package:livin_app/features/listings/presentation/views/pages/my_listings_page.dart';
 import 'package:livin_app/features/listings/presentation/views/pages/photo_viewer_page.dart';
 import 'package:livin_app/features/auth/presentation/views/pages/edit_profile_page.dart';
+import 'package:livin_app/features/places/presentation/views/pages/location_picker_page.dart';
 
 class AppRouter {
   static GoRouter create({
@@ -98,6 +100,13 @@ class AppRouter {
               photos: args.photos,
               initialIndex: args.index,
             );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.locationPicker,
+          builder: (context, state) {
+            final args = state.extra as ({LatLng? initial, String city});
+            return LocationPickerPage(initial: args.initial, city: args.city);
           },
         ),
         GoRoute(

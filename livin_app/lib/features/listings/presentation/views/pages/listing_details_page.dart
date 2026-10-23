@@ -5,6 +5,7 @@ import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
 import 'package:livin_app/core/utils/phone_utils.dart';
 import 'package:livin_app/features/listings/domain/entities/listing.dart';
+import 'package:livin_app/features/listings/presentation/views/widgets/listing_location_map.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ListingDetailsPage extends StatefulWidget {
@@ -184,6 +185,15 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                         Chip(label: Text(amenity)),
                     ],
                   ),
+                ],
+                if (listing.hasLocation) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    'Localisation',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  ListingLocationMap(listing: listing),
                 ],
                 const SizedBox(height: 24),
                 Text(

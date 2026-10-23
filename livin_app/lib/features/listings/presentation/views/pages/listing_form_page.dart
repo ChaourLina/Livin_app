@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/core/utils/amenities.dart';
 import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/core/utils/formatters.dart';
@@ -38,6 +40,7 @@ class _ListingFormPageState extends State<ListingFormPage> {
   late String _transaction;
   late List<String> _existingPhotos;
   late final Set<String> _amenities;
+  LatLng? _location;
   final List<String> _newImagePaths = [];
 
   bool get _isEditing => widget.listing != null;
@@ -62,11 +65,20 @@ class _ListingFormPageState extends State<ListingFormPage> {
           : '',
     );
     _contactController = TextEditingController(text: listing?.contact ?? '');
-    _city = listing?.city ?? AppConstants.cities.first;
+    _city = listing?.city ??
+        AppConstants.cities.firstWhere(
+          (city) => city == 'Alger',
+          orElse: () => AppConstants.cities.first,
+        );
     _type = listing?.type ?? AppConstants.propertyTypes.first;
     _transaction = listing?.transactionType ?? AppConstants.rent;
     _existingPhotos = List<String>.from(listing?.photos ?? const []);
     _amenities = Set<String>.from(listing?.amenities ?? const []);
+    final latitude = listing?.latitude;
+    final longitude = listing?.longitude;
+    if (latitude != null && longitude != null) {
+      _location = LatLng(latitude, longitude);
+    }
   }
 
   @override
@@ -99,6 +111,16 @@ class _ListingFormPageState extends State<ListingFormPage> {
     });
   }
 
+  Future<void> _pickLocation() async {
+    final point = await context.push<LatLng>(
+      AppRoutes.locationPicker,
+      extra: (initial: _location, city: _city),
+    );
+    if (point != null) {
+      setState(() => _location = point);
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     final existing = widget.listing;
@@ -115,6 +137,8 @@ class _ListingFormPageState extends State<ListingFormPage> {
       city: _city,
       contact: _contactController.text.trim(),
       amenities: Amenities.all.where(_amenities.contains).toList(),
+      latitude: _location?.latitude,
+      longitude: _location?.longitude,
       photos: _existingPhotos,
       createdAt: existing?.createdAt ?? DateTime.now(),
       isAvailable: existing?.isAvailable ?? true,
@@ -274,6 +298,56 @@ class _ListingFormPageState extends State<ListingFormPage> {
                         .toList(),
                     onChanged: (value) => setState(() => _type = value!),
                   ),
+                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Localisation',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: Icon(
+                            _location == null
+                                ? Icons.add_location_alt_outlined
+                                : Icons.edit_location_alt_outlined,
+                          ),
+                          label: Text(
+                            _location == null
+                                ? 'Placer le logement sur la carte'
+                                : 'Modifier la position',
+                          ),
+                          onPressed: _pickLocation,
+                        ),
+                        if (_location != null)
+                          TextButton(
+                            onPressed: () => setState(() => _location = null),
+                            child: const Text('Retirer'),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (_location != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Position enregistrée',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 24),
                   Align(
                     alignment: Alignment.centerLeft,

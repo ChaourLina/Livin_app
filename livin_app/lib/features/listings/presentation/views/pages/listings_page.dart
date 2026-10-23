@@ -16,6 +16,7 @@ import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/lis
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_state.dart';
 import 'package:livin_app/features/listings/presentation/views/widgets/listing_card.dart';
 import 'package:livin_app/features/listings/presentation/views/widgets/listing_filters_sheet.dart';
+import 'package:livin_app/features/listings/presentation/views/widgets/listings_map_view.dart';
 
 class ListingsPage extends StatefulWidget {
   const ListingsPage({super.key});
@@ -31,6 +32,7 @@ class _ListingsPageState extends State<ListingsPage> {
   String? _type;
   String? _city;
   ListingFilter _advanced = const ListingFilter();
+  bool _showMap = false;
 
   bool get _hasActiveFilter =>
       _query.isNotEmpty ||
@@ -182,8 +184,17 @@ class _ListingsPageState extends State<ListingsPage> {
       appBar: AppBar(
         title: const LivinLogo(),
         centerTitle: false,
+        actions: [
+          TextButton.icon(
+            onPressed: () => setState(() => _showMap = !_showMap),
+            icon: Icon(_showMap ? Icons.view_list_outlined : Icons.map_outlined),
+            label: Text(_showMap ? 'Liste' : 'Carte'),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
         onPressed: () {
           final auth = context.read<AuthBloc>().state;
           if (auth is! AuthSuccess) return;
@@ -324,6 +335,7 @@ class _ListingsPageState extends State<ListingsPage> {
                   );
                 }
                 if (state is ListingsSuccess) {
+                  if (_showMap) return ListingsMapView(listings: state.listings);
                   if (state.listings.isEmpty) return _emptyState();
                   final count = state.listings.length;
                   final label =

@@ -10,6 +10,9 @@ import 'package:livin_app/features/listings/data/data_sources/remote/listings_re
 import 'package:livin_app/features/listings/domain/repositories/listings_repository.dart';
 import 'package:livin_app/features/listings/presentation/blocs/listings_bloc/listings_bloc.dart';
 import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/my_listings_bloc.dart';
+import 'package:livin_app/features/places/data/data_sources/remote/places_remote_data_source.dart';
+import 'package:livin_app/features/places/domain/repositories/places_repository.dart';
+import 'package:livin_app/features/places/presentation/blocs/place_search_bloc/place_search_bloc.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -45,4 +48,13 @@ void setupDependencies() {
     ),
   );
   sl.registerFactory<FavoritesBloc>(() => FavoritesBloc(repository: sl()));
+
+  // Places (recherche d'adresse)
+  sl.registerLazySingleton<PlacesRemoteDataSource>(
+    () => PlacesRemoteDataSource(),
+  );
+  sl.registerLazySingleton<PlacesRepository>(
+    () => PlacesRepository(remoteDataSource: sl()),
+  );
+  sl.registerFactory<PlaceSearchBloc>(() => PlaceSearchBloc(repository: sl()));
 }
