@@ -14,6 +14,7 @@ Real estate app (buy / rent) built with Flutter, BLoC and Firebase.
 - Favorites
 - Contact the seller via WhatsApp or phone call
 - Offline banner
+- Map view of listings (OpenStreetMap) with price markers, location picker when publishing, and directions from the listing details
 
 ## Architecture
 Feature-first, three layers per feature (hybrid / simplified Clean Architecture):
