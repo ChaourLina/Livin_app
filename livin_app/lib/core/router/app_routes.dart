@@ -12,4 +12,5 @@ class AppRoutes {
   static const listingForm = '/listing-form';
   static const editProfile = '/edit-profile';
   static const locationPicker = '/location-picker';
+  static const admin = '/admin';
 }

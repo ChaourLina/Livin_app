@@ -27,6 +27,10 @@ class AuthRemoteDataSource {
         throw const NotFoundException('Profil utilisateur introuvable.');
       }
       final data = doc.data()!;
+      if (data['isBlocked'] == true) {
+        await _auth.signOut();
+        throw const UnauthorizedException('Votre compte est suspendu.');
+      }
       if (data['verificationRequired'] == true && !user.emailVerified) {
         await _auth.signOut();
         throw const EmailNotVerifiedException();
@@ -113,6 +117,10 @@ class AuthRemoteDataSource {
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) return null;
       final data = doc.data()!;
+      if (data['isBlocked'] == true) {
+        await _auth.signOut();
+        return null;
+      }
       if (data['verificationRequired'] == true && !user.emailVerified) {
         await _auth.signOut();
         return null;

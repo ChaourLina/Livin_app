@@ -122,6 +122,14 @@ class ProfilePage extends StatelessWidget {
                 onPressed: () => context.push(AppRoutes.editProfile),
               ),
               const SizedBox(height: 12),
+              if (user.isAdmin) ...[
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.admin_panel_settings_outlined),
+                  label: const Text('Espace administrateur'),
+                  onPressed: () => context.push(AppRoutes.admin),
+                ),
+                const SizedBox(height: 12),
+              ],
               OutlinedButton.icon(
                 icon: const Icon(Icons.logout),
                 label: const Text('Se déconnecter'),

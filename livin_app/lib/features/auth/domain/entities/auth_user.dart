@@ -7,6 +7,8 @@ class AuthUser extends Equatable {
   final String phone;
   final String address;
   final String photoUrl;
+  final String role;
+  final bool isBlocked;
 
   const AuthUser({
     required this.uid,
@@ -15,8 +17,13 @@ class AuthUser extends Equatable {
     this.phone = '',
     this.address = '',
     this.photoUrl = '',
+    this.role = 'user',
+    this.isBlocked = false,
   });
 
+  bool get isAdmin => role == 'admin';
+
   @override
-  List<Object?> get props => [uid, email, name, phone, address, photoUrl];
+  List<Object?> get props =>
+      [uid, email, name, phone, address, photoUrl, role, isBlocked];
 }

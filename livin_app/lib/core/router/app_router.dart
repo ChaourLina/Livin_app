@@ -6,6 +6,7 @@ import 'package:livin_app/core/shared/home_shell.dart';
 import 'package:livin_app/core/shared/splash_page.dart';
 import 'package:livin_app/core/shared/welcome_page.dart';
 import 'package:livin_app/core/utils/first_launch.dart';
+import 'package:livin_app/features/admin/presentation/views/pages/admin_home_page.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 import 'package:livin_app/features/auth/presentation/views/pages/login_page.dart';
@@ -87,6 +88,10 @@ class AppRouter {
           path: AppRoutes.editProfile,
           builder: (context, state) => const EditProfilePage(),
         ),
+                GoRoute(
+          path: AppRoutes.admin,
+          builder: (context, state) => const AdminHomePage(),
+        ),
         GoRoute(
           path: AppRoutes.listing,
           builder: (context, state) =>
@@ -135,6 +140,10 @@ class AppRouter {
         location == AppRoutes.login || location == AppRoutes.register;
     if (!isLoggedIn) {
       return onAuthPage ? null : AppRoutes.login;
+    }
+        final isAdmin = auth.user.isAdmin;
+    if (location.startsWith(AppRoutes.admin) && !isAdmin) {
+      return AppRoutes.home;
     }
     if (onAuthPage ||
         location == AppRoutes.splash ||
