@@ -6,27 +6,58 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function verified() {
-      return request.auth != null && request.auth.token.email_verified == true;
+    // Profil de l'utilisateur connecté (lu dans Firestore).
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return signedIn() && userDoc().get('role', 'user') == 'admin';
+    }
+
+    function isBlocked() {
+      return signedIn() && userDoc().get('isBlocked', false) == true;
     }
 
     match /users/{userId} {
-      allow read, write: if signedIn() && request.auth.uid == userId;
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+
+      // À la création, l'utilisateur ne peut pas se donner de rôle ni se bloquer.
+      allow create: if signedIn() && request.auth.uid == userId
+        && !request.resource.data.keys().hasAny(['role', 'isBlocked']);
+
+      // Un utilisateur modifie son profil sans toucher à `role` ni `isBlocked`.
+      // Un administrateur peut bloquer ou débloquer, mais jamais changer un rôle.
+      allow update: if signedIn() && (
+        (request.auth.uid == userId
+          && request.resource.data.get('role', 'user') == resource.data.get('role', 'user')
+          && request.resource.data.get('isBlocked', false) == resource.data.get('isBlocked', false))
+        || (isAdmin()
+          && request.resource.data.get('role', 'user') == resource.data.get('role', 'user'))
+      );
+
+      allow delete: if false;
     }
 
     match /favorites/{userId} {
-      allow read, write: if verified() && request.auth.uid == userId;
+      allow read, write: if signedIn() && request.auth.uid == userId && !isBlocked();
     }
 
     match /listings/{listingId} {
-      allow read: if verified();
-      allow create: if verified()
+      allow read: if signedIn() && !isBlocked();
+
+      allow create: if signedIn() && !isBlocked()
         && request.resource.data.ownerId == request.auth.uid;
-      allow update: if verified()
-        && resource.data.ownerId == request.auth.uid
-        && request.resource.data.ownerId == request.auth.uid;
-      allow delete: if verified()
-        && resource.data.ownerId == request.auth.uid;
+
+      allow update: if signedIn() && !isBlocked() && (
+        (resource.data.ownerId == request.auth.uid
+          && request.resource.data.ownerId == request.auth.uid)
+        || (isAdmin()
+          && request.resource.data.ownerId == resource.data.ownerId)
+      );
+
+      allow delete: if signedIn() && !isBlocked()
+        && (resource.data.ownerId == request.auth.uid || isAdmin());
     }
   }
 }
