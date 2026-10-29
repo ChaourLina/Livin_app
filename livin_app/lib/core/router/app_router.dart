@@ -8,6 +8,7 @@ import 'package:livin_app/core/shared/welcome_page.dart';
 import 'package:livin_app/core/utils/first_launch.dart';
 import 'package:livin_app/features/admin/presentation/views/pages/admin_home_page.dart';
 import 'package:livin_app/features/admin/presentation/views/pages/admin_listings_page.dart';
+import 'package:livin_app/features/admin/presentation/views/pages/admin_users_page.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 import 'package:livin_app/features/auth/presentation/views/pages/login_page.dart';
@@ -95,6 +96,10 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.adminListings,
           builder: (context, state) => const AdminListingsPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.adminUsers,
+          builder: (context, state) => const AdminUsersPage(),
         ),
         GoRoute(
           path: AppRoutes.listing,

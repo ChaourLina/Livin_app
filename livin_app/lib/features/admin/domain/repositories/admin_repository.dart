@@ -3,6 +3,8 @@ import 'package:livin_app/core/error/error_handler.dart';
 import 'package:livin_app/core/error/failure.dart';
 import 'package:livin_app/features/admin/data/data_sources/remote/admin_remote_data_source.dart';
 import 'package:livin_app/features/admin/domain/entities/admin_listing.dart';
+import 'package:livin_app/features/admin/domain/entities/admin_user.dart';
+
 class AdminRepository {
   final AdminRemoteDataSource remoteDataSource;
 
@@ -54,5 +56,59 @@ class AdminRepository {
 
   Future<Either<Failure, void>> deleteListing(String listingId) {
     return guard<void>(() => remoteDataSource.deleteListing(listingId));
+  }
+
+  // Tous les utilisateurs, avec le nombre d'annonces de chacun.
+  // Les administrateurs sont placés en premier, puis tri par nom.
+  Future<Either<Failure, List<AdminUser>>> getUsers() {
+    return guard(() async {
+      final userModels = await remoteDataSource.getAllUsers();
+      final listingModels = await remoteDataSource.getAllListings();
+
+      final counts = <String, int>{};
+      for (final listing in listingModels) {
+        counts[listing.ownerId] = (counts[listing.ownerId] ?? 0) + 1;
+      }
+
+      final items = userModels
+          .map(
+            (model) => AdminUser(
+              user: model.toEntity(),
+              listingsCount: counts[model.uid] ?? 0,
+            ),
+          )
+          .toList();
+
+      items.sort((a, b) {
+        if (a.user.isAdmin != b.user.isAdmin) return a.user.isAdmin ? -1 : 1;
+        return a.user.name.toLowerCase().compareTo(b.user.name.toLowerCase());
+      });
+      return items;
+    });
+  }
+
+  Future<Either<Failure, void>> blockUser({
+    required String uid,
+    required bool hideListings,
+  }) {
+    return guard<void>(() async {
+      await remoteDataSource.setUserBlocked(uid: uid, blocked: true);
+      if (hideListings) {
+        await remoteDataSource.setOwnerListingsSuspended(
+          ownerId: uid,
+          suspended: true,
+        );
+      }
+    });
+  }
+
+  Future<Either<Failure, void>> unblockUser(String uid) {
+    return guard<void>(() async {
+      await remoteDataSource.setUserBlocked(uid: uid, blocked: false);
+      await remoteDataSource.setOwnerListingsSuspended(
+        ownerId: uid,
+        suspended: false,
+      );
+    });
   }
 }

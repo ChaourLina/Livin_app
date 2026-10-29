@@ -43,11 +43,12 @@ class AdminHomePage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(AppRoutes.adminListings),
           ),
-          const ListTile(
-            enabled: false,
-            leading: Icon(Icons.people_outline),
-            title: Text('Utilisateurs'),
-            subtitle: Text('Gestion et blocage : étape suivante'),
+          ListTile(
+            leading: const Icon(Icons.people_outline),
+            title: const Text('Utilisateurs'),
+            subtitle: const Text('Voir, bloquer ou débloquer'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.adminUsers),
           ),
         ],
       ),
