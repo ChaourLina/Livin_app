@@ -47,11 +47,14 @@ service cloud.firestore {
       allow read: if signedIn() && !isBlocked();
 
       allow create: if signedIn() && !isBlocked()
-        && request.resource.data.ownerId == request.auth.uid;
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.get('hiddenByAdmin', false) == false;
 
       allow update: if signedIn() && !isBlocked() && (
         (resource.data.ownerId == request.auth.uid
-          && request.resource.data.ownerId == request.auth.uid)
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.get('hiddenByAdmin', false) == resource.data.get('hiddenByAdmin', false)
+          && request.resource.data.get('adminNote', '') == resource.data.get('adminNote', ''))
         || (isAdmin()
           && request.resource.data.ownerId == resource.data.ownerId)
       );
