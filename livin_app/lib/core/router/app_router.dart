@@ -7,6 +7,7 @@ import 'package:livin_app/core/shared/splash_page.dart';
 import 'package:livin_app/core/shared/welcome_page.dart';
 import 'package:livin_app/core/utils/first_launch.dart';
 import 'package:livin_app/features/admin/presentation/views/pages/admin_home_page.dart';
+import 'package:livin_app/features/admin/presentation/views/pages/admin_listings_page.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 import 'package:livin_app/features/auth/presentation/views/pages/login_page.dart';
@@ -30,8 +31,7 @@ class AppRouter {
     return GoRouter(
       initialLocation: AppRoutes.splash,
       refreshListenable: refreshListenable,
-      redirect: (context, state) =>
-          _redirect(authBloc.state, state.matchedLocation),
+      redirect: (context, state) => _redirect(authBloc.state, state.matchedLocation),
       routes: [
         GoRoute(
           path: AppRoutes.splash,
@@ -88,9 +88,13 @@ class AppRouter {
           path: AppRoutes.editProfile,
           builder: (context, state) => const EditProfilePage(),
         ),
-                GoRoute(
+         GoRoute(
           path: AppRoutes.admin,
           builder: (context, state) => const AdminHomePage(),
+        ),
+        GoRoute(
+          path: AppRoutes.adminListings,
+          builder: (context, state) => const AdminListingsPage(),
         ),
         GoRoute(
           path: AppRoutes.listing,

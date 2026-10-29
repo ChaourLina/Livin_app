@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:livin_app/core/router/app_routes.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_state.dart';
 
@@ -34,11 +36,12 @@ class AdminHomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const ListTile(
-            enabled: false,
-            leading: Icon(Icons.home_work_outlined),
-            title: Text('Annonces'),
-            subtitle: Text('Modération : étape suivante'),
+          ListTile(
+            leading: const Icon(Icons.home_work_outlined),
+            title: const Text('Annonces'),
+            subtitle: const Text('Voir, masquer ou supprimer'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.adminListings),
           ),
           const ListTile(
             enabled: false,

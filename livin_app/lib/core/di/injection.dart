@@ -1,4 +1,7 @@
 import 'package:get_it/get_it.dart';
+import 'package:livin_app/features/admin/data/data_sources/remote/admin_remote_data_source.dart';
+import 'package:livin_app/features/admin/domain/repositories/admin_repository.dart';
+import 'package:livin_app/features/admin/presentation/blocs/admin_listings_bloc/admin_listings_bloc.dart';
 import 'package:livin_app/features/auth/data/data_sources/remote/auth_remote_data_source.dart';
 import 'package:livin_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:livin_app/features/auth/presentation/blocs/auth_bloc/auth_bloc.dart';
@@ -57,4 +60,15 @@ void setupDependencies() {
     () => PlacesRepository(remoteDataSource: sl()),
   );
   sl.registerFactory<PlaceSearchBloc>(() => PlaceSearchBloc(repository: sl()));
+  
+  // Admin
+  sl.registerLazySingleton<AdminRemoteDataSource>(
+    () => AdminRemoteDataSource(),
+  );
+  sl.registerLazySingleton<AdminRepository>(
+    () => AdminRepository(remoteDataSource: sl()),
+  );
+  sl.registerFactory<AdminListingsBloc>(
+    () => AdminListingsBloc(repository: sl()),
+  );
 }
