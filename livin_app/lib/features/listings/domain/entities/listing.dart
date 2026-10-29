@@ -18,6 +18,8 @@ class Listing extends Equatable {
   final bool isAvailable;
   final double? latitude;
   final double? longitude;
+  final bool hiddenByAdmin;
+  final String adminNote;
 
   const Listing({
     required this.id,
@@ -37,6 +39,8 @@ class Listing extends Equatable {
     this.isAvailable = true,
     this.latitude,
     this.longitude,
+    this.hiddenByAdmin = false,
+    this.adminNote = '',
   });
 
   bool get hasLocation => latitude != null && longitude != null;
@@ -60,6 +64,8 @@ class Listing extends Equatable {
       isAvailable: isAvailable ?? this.isAvailable,
       latitude: latitude,
       longitude: longitude,
+      hiddenByAdmin: hiddenByAdmin,
+      adminNote: adminNote,
     );
   }
 
@@ -82,5 +88,7 @@ class Listing extends Equatable {
         isAvailable,
         latitude,
         longitude,
+        hiddenByAdmin,
+        adminNote,
       ];
 }

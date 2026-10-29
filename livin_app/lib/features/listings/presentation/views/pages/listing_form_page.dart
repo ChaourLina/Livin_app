@@ -142,6 +142,8 @@ class _ListingFormPageState extends State<ListingFormPage> {
       photos: _existingPhotos,
       createdAt: existing?.createdAt ?? DateTime.now(),
       isAvailable: existing?.isAvailable ?? true,
+      hiddenByAdmin: existing?.hiddenByAdmin ?? false,
+      adminNote: existing?.adminNote ?? '',
     );
     final bloc = context.read<MyListingsBloc>();
     if (existing == null) {

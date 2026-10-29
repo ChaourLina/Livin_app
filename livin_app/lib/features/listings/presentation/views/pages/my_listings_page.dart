@@ -92,7 +92,7 @@ class MyListingsPage extends StatelessWidget {
 
   Widget _thumbnail(BuildContext context, Listing listing) {
     final scheme = Theme.of(context).colorScheme;
-    final hidden = !listing.isAvailable;
+    final hidden = !listing.isAvailable || listing.hiddenByAdmin;
     return SizedBox(
       width: 112,
       height: 112,
@@ -127,7 +127,9 @@ class MyListingsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  capitalize(_doneLabel(listing)),
+                  listing.hiddenByAdmin
+                      ? 'Masquée'
+                      : capitalize(_doneLabel(listing)),
                   style: TextStyle(
                     color: scheme.onPrimary,
                     fontWeight: FontWeight.w700,
@@ -213,6 +215,18 @@ class MyListingsPage extends StatelessWidget {
             ],
           ),
           const Divider(height: 1),
+          if (listing.hiddenByAdmin)
+            Container(
+              width: double.infinity,
+              color: scheme.errorContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                listing.adminNote.isEmpty
+                    ? 'Annonce masquée par l\'administrateur.'
+                    : 'Annonce masquée par l\'administrateur : ${listing.adminNote}',
+                style: TextStyle(color: scheme.onErrorContainer, fontSize: 13),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             child: Wrap(
@@ -225,7 +239,8 @@ class MyListingsPage extends StatelessWidget {
                   label: const Text('Modifier'),
                   onPressed: () => _openForm(context, listing: listing),
                 ),
-                TextButton(
+                if (!listing.hiddenByAdmin)
+                  TextButton(
                   onPressed: () => listing.isAvailable
                       ? _confirmMarkDone(context, listing)
                       : _reactivate(context, listing),

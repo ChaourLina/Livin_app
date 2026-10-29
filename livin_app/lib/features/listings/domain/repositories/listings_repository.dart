@@ -77,7 +77,7 @@ class ListingsRepository {
   }
 
   bool _matches(Listing listing, ListingFilter filter) {
-    if (!listing.isAvailable) return false;
+    if (!listing.isAvailable || listing.hiddenByAdmin) return false;
 
     final query = _normalize(filter.query ?? '');
     if (query.isNotEmpty) {

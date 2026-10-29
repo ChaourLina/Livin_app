@@ -25,7 +25,7 @@ class FavoritesRepository {
       final models = await listingsDataSource.getListingsByIds(ids);
           return models
           .map((model) => model.toEntity())
-          .where((listing) => listing.isAvailable)
+          .where((listing) => listing.isAvailable && !listing.hiddenByAdmin)
           .toList();
     });
   }

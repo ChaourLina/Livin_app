@@ -19,6 +19,8 @@ class ListingModel {
   final bool isAvailable;
   final double? latitude;
   final double? longitude;
+  final bool hiddenByAdmin;
+  final String adminNote;
 
   ListingModel({
     required this.id,
@@ -38,6 +40,8 @@ class ListingModel {
     this.isAvailable = true,
     this.latitude,
     this.longitude,
+    this.hiddenByAdmin = false,
+    this.adminNote = '',
   });
 
   factory ListingModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +63,8 @@ class ListingModel {
       isAvailable: json['isAvailable'] ?? true,
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      hiddenByAdmin: json['hiddenByAdmin'] ?? false,
+      adminNote: json['adminNote'] ?? '',
     );
   }
 
@@ -81,6 +87,8 @@ class ListingModel {
       'isAvailable': isAvailable,
       'latitude': latitude,
       'longitude': longitude,
+      'hiddenByAdmin': hiddenByAdmin,
+      'adminNote': adminNote,
     };
   }
 
@@ -103,6 +111,8 @@ class ListingModel {
       isAvailable: isAvailable,
       latitude: latitude,
       longitude: longitude,
+      hiddenByAdmin: hiddenByAdmin,
+      adminNote: adminNote,
     );
   }
 
@@ -125,6 +135,8 @@ class ListingModel {
       isAvailable: listing.isAvailable,
       latitude: listing.latitude,
       longitude: listing.longitude,
+      hiddenByAdmin: listing.hiddenByAdmin,
+      adminNote: listing.adminNote,
     );
   }
 }
