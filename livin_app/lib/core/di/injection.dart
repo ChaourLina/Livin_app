@@ -17,6 +17,7 @@ import 'package:livin_app/features/listings/presentation/blocs/my_listings_bloc/
 import 'package:livin_app/features/places/data/data_sources/remote/places_remote_data_source.dart';
 import 'package:livin_app/features/places/domain/repositories/places_repository.dart';
 import 'package:livin_app/features/places/presentation/blocs/place_search_bloc/place_search_bloc.dart';
+import 'package:livin_app/features/admin/presentation/blocs/admin_dashboard_bloc/admin_dashboard_bloc.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -74,5 +75,8 @@ void setupDependencies() {
   );
   sl.registerFactory<AdminUsersBloc>(
     () => AdminUsersBloc(repository: sl()),
+  );
+    sl.registerFactory<AdminDashboardBloc>(
+    () => AdminDashboardBloc(repository: sl()),
   );
 }

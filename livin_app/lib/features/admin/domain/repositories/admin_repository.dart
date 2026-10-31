@@ -1,8 +1,10 @@
 import 'package:livin_app/core/error/either.dart';
 import 'package:livin_app/core/error/error_handler.dart';
 import 'package:livin_app/core/error/failure.dart';
+import 'package:livin_app/core/utils/constants.dart';
 import 'package:livin_app/features/admin/data/data_sources/remote/admin_remote_data_source.dart';
 import 'package:livin_app/features/admin/domain/entities/admin_listing.dart';
+import 'package:livin_app/features/admin/domain/entities/admin_stats.dart';
 import 'package:livin_app/features/admin/domain/entities/admin_user.dart';
 
 class AdminRepository {
@@ -108,6 +110,53 @@ class AdminRepository {
       await remoteDataSource.setOwnerListingsSuspended(
         ownerId: uid,
         suspended: false,
+      );
+    });
+  }
+
+  // Chiffres du tableau de bord, calculés à partir des utilisateurs et des annonces.
+  // Une annonce est dans UNE seule catégorie : masquée par l'admin, louée ou
+  // vendue (fermée par son propriétaire), ou en ligne.
+  Future<Either<Failure, AdminStats>> getStats() {
+    return guard(() async {
+      final users = await remoteDataSource.getAllUsers();
+      final listings = await remoteDataSource.getAllListings();
+      final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+
+      var online = 0;
+      var hidden = 0;
+      var closed = 0;
+      var onlineRent = 0;
+      var onlineSale = 0;
+      var recent = 0;
+
+      for (final listing in listings) {
+        if (listing.hiddenByAdmin) {
+          hidden++;
+        } else if (!listing.isAvailable) {
+          closed++;
+        } else {
+          online++;
+          if (listing.transactionType == AppConstants.rent) {
+            onlineRent++;
+          } else {
+            onlineSale++;
+          }
+        }
+        if (listing.createdAt.isAfter(weekAgo)) recent++;
+      }
+
+      return AdminStats(
+        totalUsers: users.length,
+        blockedUsers: users.where((user) => user.isBlocked).length,
+        adminUsers: users.where((user) => user.role == 'admin').length,
+        totalListings: listings.length,
+        onlineListings: online,
+        hiddenListings: hidden,
+        closedListings: closed,
+        onlineRent: onlineRent,
+        onlineSale: onlineSale,
+        newListingsLastWeek: recent,
       );
     });
   }

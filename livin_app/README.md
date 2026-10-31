@@ -15,6 +15,8 @@ Real estate app (buy / rent) built with Flutter, BLoC and Firebase.
 - Contact the seller via WhatsApp or phone call
 - Offline banner
 - Map view of listings (OpenStreetMap) with price markers, location picker when publishing, and directions from the listing details
+- Admin area (role-based): dashboard with statistics, listing moderation (hide with a reason, restore, delete) and user management (block / unblock)
+- Map view of listings with address search (OpenStreetMap)
 
 ## Architecture
 Feature-first, three layers per feature (hybrid / simplified Clean Architecture):
@@ -44,4 +46,4 @@ Data flow: `Page -> Event -> Bloc -> Repository -> Data source -> Firebase / Clo
 ## Known limitations
 - No pagination: listings are loaded once and filtered on the device.
 - Cloudinary upload preset is unsigned (acceptable for a prototype).
-- No map view and no admin panel yet.
+- Admin accounts are created by editing the `role` field in Firestore; blocking is enforced by the app and by Firestore rules, but the Firebase Auth account is not deleted (no server code).
